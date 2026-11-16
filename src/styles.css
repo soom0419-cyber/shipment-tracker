@@ -282,3 +282,7 @@ table.grid { font-size: var(--fs, 13px); }
 .grid th { font-size: calc(var(--fs, 13px) - 1px); }
 .grid .badge { font-size: calc(var(--fs, 13px) - 1px); padding: 2px 7px; }
 .grid th, .grid td { padding-left: 3px; padding-right: 3px; }
+
+table.grid { width: var(--tw, max-content); }
+.grid .mail .mini { white-space: normal; line-height: 1.3; }
+.grid .badge { white-space: normal; }

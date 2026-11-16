@@ -48,12 +48,14 @@ export function colVars(areaWidth: number): Record<string, string> {
   const scale = Math.max(MIN_SCALE, areaWidth / TOTAL_W);
   // 좁은 화면에서는 글자도 조금 작게 (13px → 최소 11px)
   const v: Record<string, string> = { '--fs': `${Math.max(11, Math.min(13, Math.round(13 * scale)))}px` };
-  let left = 0;
+  let left = 0, total = 0;
   for (const c of COLUMNS) {
     const w = Math.floor(c.width * scale);
     v[`--w-${c.key}`] = `${w}px`;
     if (c.sticky) { v[`--l-${c.key}`] = `${left}px`; left += w; }
+    total += w;
   }
+  v['--tw'] = `${total}px`;   // 표 전체 너비 = 칸 폭 합계 (내용 때문에 넓어지지 않게)
   return v;
 }
 
