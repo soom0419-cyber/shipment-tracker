@@ -5,6 +5,7 @@ import { Cell, STATUS_TONE, type RowAction, type Save, type Suggestion } from '.
 import { candidateOf, clearSuggested, stageOfStatus, todayKST } from './delay';
 import { DelayDialog, InboundDialog, PurgeDialog } from './Dialogs';
 import { downloadXlsx } from './excel';
+import { ko } from './ko';
 import { COLUMNS, LAST_STICKY, STICKY_LEFT, bookingOf, exceptionName } from './columns';
 import { NewRow, loadDraft } from './NewRow';
 import type { Activity, ExceptionType, Shipment, ShipmentInput } from './types';
@@ -109,7 +110,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
         void load();
         return false;
       }
-      setSaveState({ kind: 'error', msg: '이 Shipment는 이미 삭제되었습니다' });
+      setSaveState({ kind: 'error', msg: '이 선적은 이미 삭제되었습니다' });
       void load();
       return false;
     } catch (x) {
@@ -143,7 +144,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   // Activity·알림에서 Shipment 번호 클릭 → 해당 목록으로 이동해 행 강조
   const openShipment = (a: Activity) => {
     const s = rows.find((x) => x.id === a.shipment_id);
-    if (!s) return showToast({ msg: `${a.shipment_no ?? 'Shipment'}는 영구 삭제되었습니다` });
+    if (!s) return showToast({ msg: `${a.shipment_no ?? '이 선적'}는 영구 삭제되었습니다` });
     setView(s.location !== 'active' ? s.location : s.status === DONE ? 'completed' : 'main');
     setF(NO_FILTER);
     setHighlight(s.id);
@@ -184,11 +185,11 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   };
 
   // Archive / Trash / 복구: 위치만 바꾸고 데이터와 이력은 그대로. 실수 대비 되돌리기 안내.
-  const LOC_LABEL = { active: '목록', archived: 'Archive', trashed: 'Trash' } as const;
+  const LOC_LABEL = { active: '목록', archived: '보관함', trashed: '휴지통' } as const;
   const move = async (s: Shipment, to: Shipment['location']) => {
     const from = s.location;
     if (!(await save(s.id, { location: from }, { location: to }))) return;
-    const where = to === 'active' ? (s.status === DONE ? 'Completed' : '진행 중 목록') : LOC_LABEL[to];
+    const where = to === 'active' ? (s.status === DONE ? '입고 완료 목록' : '진행 중 목록') : LOC_LABEL[to];
     showToast({
       msg: `${s.shipment_no} → ${where}${to === 'active' ? '으로 복구했습니다' : '로 이동했습니다'}`,
       undo: () => { setToast(null); void save(s.id, { location: to }, { location: from }); },
@@ -198,7 +199,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   const purge = (s: Shipment) => async () => {
     try {
       const ok = await purgeShipment(s.id, name);
-      if (!ok) { setSaveState({ kind: 'error', msg: 'Trash에 있는 Shipment만 영구 삭제할 수 있습니다' }); return false; }
+      if (!ok) { setSaveState({ kind: 'error', msg: '휴지통에 있는 선적만 영구 삭제할 수 있습니다' }); return false; }
       setRows((rs) => rs.filter((x) => x.id !== s.id));
       showToast({ msg: `${s.shipment_no}를 영구 삭제했습니다` });
       return true;
@@ -217,7 +218,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
     const ok = await save(s.id, { status: s.status, inbound_date: s.inbound_date }, { status: DONE, inbound_date: date });
     if (ok) {
       showToast({
-        msg: `${s.shipment_no} → Completed로 이동했습니다`,
+        msg: `${s.shipment_no} → 입고 완료 목록으로 이동했습니다`,
         undo: () => { setToast(null); void save(s.id, { status: DONE, inbound_date: date }, { status: s.status, inbound_date: s.inbound_date }); },
       });
     }
@@ -278,18 +279,19 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   const filtered = JSON.stringify(f) !== JSON.stringify(NO_FILTER);
   const setFilter = (k: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
   const fmtVal = (v: unknown) => (v == null || v === '' ? '(빈 값)' : Array.isArray(v) ? v.join(', ') || '(빈 값)'
-    : conflict?.field === 'exception_id' ? ex.find((e) => e.id === v)?.name ?? String(v) : String(v));
+    : conflict?.field === 'exception_id' ? ko('exception', ex.find((e) => e.id === v)?.name ?? String(v))
+    : conflict ? ko(conflict.field, String(v)) : String(v));
 
   return (
     <div className="app">
       <header className="top">
-        <span className="brand">Shipment Tracker</span>
+        <span className="brand">선적 관리</span>
         <nav>
           <a className={view === 'main' ? 'on' : ''} onClick={() => { setView('main'); setF(NO_FILTER); }}>진행 중</a>
-          <a className={view === 'completed' ? 'on' : ''} onClick={() => { setView('completed'); setF(NO_FILTER); }}>Completed <span className="muted small">{doneRows.length}</span></a>
-          <a className={view === 'archived' ? 'on' : ''} onClick={() => { setView('archived'); setF(NO_FILTER); }}>Archive <span className="muted small">{archRows.length}</span></a>
-          <a className={view === 'trashed' ? 'on' : ''} onClick={() => { setView('trashed'); setF(NO_FILTER); }}>Trash <span className="muted small">{trashRows.length}</span></a>
-          <a className={view === 'activity' ? 'on' : ''} onClick={() => setView('activity')}>Activity</a>
+          <a className={view === 'completed' ? 'on' : ''} onClick={() => { setView('completed'); setF(NO_FILTER); }}>입고 완료 <span className="muted small">{doneRows.length}</span></a>
+          <a className={view === 'archived' ? 'on' : ''} onClick={() => { setView('archived'); setF(NO_FILTER); }}>보관함 <span className="muted small">{archRows.length}</span></a>
+          <a className={view === 'trashed' ? 'on' : ''} onClick={() => { setView('trashed'); setF(NO_FILTER); }}>휴지통 <span className="muted small">{trashRows.length}</span></a>
+          <a className={view === 'activity' ? 'on' : ''} onClick={() => setView('activity')}>변경 이력</a>
         </nav>
         <span className="grow" />
         <SaveBadge s={saveState} />
@@ -310,10 +312,10 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
       {view === 'main' && (
         <div className="dash">
           <button className="tile" onClick={() => setF({ ...NO_FILTER, exc: '!Cancelled' })}><span>진행 중</span><b>{dash.count.toLocaleString()}</b></button>
-          <button className="tile" onClick={() => setF({ ...NO_FILTER, exc: '!Cancelled' })}><span>전체 PCS</span><b>{dash.pcs.toLocaleString('en-US')}</b></button>
+          <button className="tile" onClick={() => setF({ ...NO_FILTER, exc: '!Cancelled' })}><span>전체 수량</span><b>{dash.pcs.toLocaleString('en-US')}</b></button>
           <button className="tile alert" onClick={() => setF({ ...NO_FILTER, delay: 'yes' })}><span>지연</span><b>{dash.delayed}</b></button>
           <button className="tile warn" onClick={() => setF({ ...NO_FILTER, delay: 'cand' })}><span>지연 후보</span><b>{dash.cand}</b></button>
-          <button className="tile" onClick={() => setF({ ...NO_FILTER, exc: 'Cancelled' })}><span>Cancelled</span><b className="muted">{dash.cancelled}</b></button>
+          <button className="tile" onClick={() => setF({ ...NO_FILTER, exc: 'Cancelled' })}><span>취소</span><b className="muted">{dash.cancelled}</b></button>
           <div className="chips">
             {dash.byStatus.map(([st, n]) => (
               <button key={st} className={`badge ${STATUS_TONE[st]} ${f.status === st ? 'picked' : ''}`}
@@ -329,19 +331,19 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
           {moreActs && acts.length >= 200 && <button onClick={() => void loadMoreActs()}>더 보기</button>}
         </section>
       ) : <>
-      {view === 'trashed' && <div className="banner note">Trash의 Shipment는 자동으로 지워지지 않습니다. 복구하거나, 행 메뉴(⋯)에서 직접 영구 삭제할 수 있습니다.</div>}
-      {view === 'archived' && <div className="banner note">Archive는 메인 목록에서 뺀 보관함입니다. 행 메뉴(⋯)에서 언제든 복구할 수 있습니다.</div>}
+      {view === 'trashed' && <div className="banner note">휴지통의 선적은 자동으로 지워지지 않습니다. 복구하거나, 행 메뉴(⋯)에서 직접 영구 삭제할 수 있습니다.</div>}
+      {view === 'archived' && <div className="banner note">보관함은 진행 중 목록에서 뺀 선적을 모아 두는 곳입니다. 행 메뉴(⋯)에서 언제든 복구할 수 있습니다.</div>}
       <div className={`filters ${filtersOpen ? 'open' : ''}`}>
-        <input className="search" placeholder="번호, 국가, BL/AWB, Season, Content 검색" value={f.q} onChange={setFilter('q')} />
+        <input className="search" placeholder="번호, 국가, BL·AWB, 시즌, 내용 검색" value={f.q} onChange={setFilter('q')} />
         <button className="mobile-only mini" onClick={() => setFiltersOpen(!filtersOpen)}>필터 {filtersOpen ? '▴' : '▾'}{filtered ? ' ●' : ''}</button>
-        <select value={f.season} onChange={setFilter('season')}><option value="">Season</option>{opts.seasons.map((o) => <option key={o}>{o}</option>)}</select>
+        <select value={f.season} onChange={setFilter('season')}><option value="">시즌</option>{opts.seasons.map((o) => <option key={o}>{o}</option>)}</select>
         <select value={f.country} onChange={setFilter('country')}><option value="">출발 국가</option>{opts.countries.map((o) => <option key={o}>{o}</option>)}</select>
-        <select value={f.mode} onChange={setFilter('mode')}><option value="">SHIP MODE</option>{SHIP_MODES.map((o) => <option key={o}>{o}</option>)}</select>
+        <select value={f.mode} onChange={setFilter('mode')}><option value="">운송 방식</option>{SHIP_MODES.map((o) => <option key={o} value={o}>{ko('ship_mode', o)}</option>)}</select>
         <select value={f.status} onChange={setFilter('status')}><option value="">진행 상태</option>{(view === 'main' ? STATUSES.slice(0, 6) : view === 'completed' ? [DONE] : STATUSES).map((o) => <option key={o}>{o}</option>)}</select>
-        <select value={f.type} onChange={setFilter('type')}><option value="">Type</option><option>Product</option><option>Sample</option></select>
+        <select value={f.type} onChange={setFilter('type')}><option value="">구분</option><option value="Product">상품</option><option value="Sample">샘플</option></select>
         <select value={f.delay} onChange={setFilter('delay')}><option value="">지연 여부</option><option value="yes">지연</option><option value="cand">지연 후보</option><option value="no">지연 아님</option></select>
-        <label className="range">ETD <input type="date" value={f.etdFrom} onChange={setFilter('etdFrom')} />~<input type="date" value={f.etdTo} onChange={setFilter('etdTo')} /></label>
-        <label className="range">ETA <input type="date" value={f.etaFrom} onChange={setFilter('etaFrom')} />~<input type="date" value={f.etaTo} onChange={setFilter('etaTo')} /></label>
+        <label className="range">출항일 <input type="date" value={f.etdFrom} onChange={setFilter('etdFrom')} />~<input type="date" value={f.etdTo} onChange={setFilter('etdTo')} /></label>
+        <label className="range">도착일 <input type="date" value={f.etaFrom} onChange={setFilter('etaFrom')} />~<input type="date" value={f.etaTo} onChange={setFilter('etaTo')} /></label>
         <label className="small muted check"><input type="checkbox" checked={grouped} onChange={(e) => setGrouped(e.target.checked)} /> 상태별 묶어 보기</label>
         {filtered && <button className="ghost small" onClick={() => setF(NO_FILTER)}>필터 초기화</button>}
         <span className="muted small count">{shown.length} / {active.length}건</span>
@@ -392,7 +394,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
               );
             })}
             {!shown.length && !newOpen && (
-              <tr><td colSpan={COLUMNS.length} className="empty">{filtered ? '조건에 맞는 Shipment가 없습니다.' : ({ main: '진행 중인 Shipment가 없습니다. + 신규로 등록하세요.', completed: '창고 입고가 완료된 Shipment가 없습니다.', archived: 'Archive가 비어 있습니다.', trashed: 'Trash가 비어 있습니다.', activity: '' })[view]}</td></tr>
+              <tr><td colSpan={COLUMNS.length} className="empty">{filtered ? '조건에 맞는 선적이 없습니다.' : ({ main: '진행 중인 선적이 없습니다. + 신규로 등록하세요.', completed: '창고 입고가 완료된 선적이 없습니다.', archived: '보관함이 비어 있습니다.', trashed: '휴지통이 비어 있습니다.', activity: '' })[view]}</td></tr>
             )}
           </tbody>
         </table>
@@ -451,11 +453,11 @@ function ExportMenu({ current, all, onCurrent, onAll }: { current: number; all: 
   const run = async (fn: () => Promise<void>) => { setBusy(true); try { await fn(); } finally { setBusy(false); setOpen(false); } };
   return (
     <div className="mail" ref={box}>
-      <button onClick={() => setOpen(!open)} disabled={busy}>{busy ? '만드는 중…' : 'Excel'}</button>
+      <button onClick={() => setOpen(!open)} disabled={busy}>{busy ? '만드는 중…' : '엑셀'}</button>
       {open && (
         <div className="pop menu export">
           <button className="ghost" onClick={() => void run(onCurrent)}>현재 검색·필터 결과 <span className="muted small">{current}건</span></button>
-          <button className="ghost" onClick={() => void run(onAll)}>전체 Shipment <span className="muted small">{all}건 · Trash 제외</span></button>
+          <button className="ghost" onClick={() => void run(onAll)}>전체 선적 <span className="muted small">{all}건 · 휴지통 제외</span></button>
         </div>
       )}
     </div>

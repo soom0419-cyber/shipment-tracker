@@ -3,6 +3,7 @@ import type { Col } from './columns';
 import { LAST_STICKY, STICKY_LEFT, bookingOf, exceptionName, fmtAgo, fmtDate, fmtInt, isUrl, parseInput, toInput } from './columns';
 import type { Candidate } from './delay';
 import { etaMissing } from './delay';
+import { ko } from './ko';
 import type { ExceptionType, Shipment, Status } from './types';
 
 export type Save = (id: string, expected: Record<string, unknown>, next: Record<string, unknown>) => Promise<boolean>;
@@ -59,9 +60,9 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
       const n = exceptionName(s, ex);
       return (
         <>
-          {s.delay_confirmed && <span className="badge red" title={s.delay_stage ? `${s.delay_stage} 지연` : ''}>Delayed</span>}{' '}
-          {n && <span className={`badge ${n === 'Cancelled' ? 'outline' : 'amber'}`}>{n}</span>}
-          {cand && <span className="badge amber" title={`${cand.stage}가 지났는데 상태가 그대로입니다`}>{cand.stage} 지연 후보</span>}
+          {s.delay_confirmed && <span className="badge red" title={s.delay_stage ? `${ko('delay_stage', s.delay_stage)} 지연` : ''}>지연</span>}{' '}
+          {n && <span className={`badge ${n === 'Cancelled' ? 'outline' : 'amber'}`}>{ko('exception', n)}</span>}
+          {cand && <span className="badge amber" title={`${cand.stage === 'ETD' ? '출항 예정일' : '도착 예정일'}이 지났는데 상태가 그대로입니다`}>{ko('delay_stage', cand.stage)} 지연 후보</span>}
           {s.delay_confirmed && <div className="sub" title={s.delay_reason ?? ''}>{s.delay_reason}</div>}
           {cand && (
             <div className="sub acts" onClick={stop}>
@@ -86,6 +87,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
     case 'cartons': return <>{fmtInt(s.cartons)}</>;
     case 'pcs': return <>{fmtInt(s.pcs)}</>;
     case 'seasons': return <>{s.seasons.join(', ')}</>;
+    case 'ship_mode': case 'shipment_type': return <>{ko(col.key, s[col.key])}</>;
     case 'remark': return <span className="clip" title={s.remark ?? ''}>{s.remark?.split('\n')[0]}</span>;
     case 'updated': return <span className="muted small">{s.updated_by} · {fmtAgo(s.updated_at)}</span>;
     default: {
@@ -132,7 +134,7 @@ function Editor({ col, s, ex, onAddException, onDone, save, act }: EditorProps) 
       // 완료 해제는 확인 후, 입고일도 함께 비운다
       if (expected === '창고 입고 완료') {
         done.current = true; onDone();
-        if (confirm(`입고 완료 상태를 '${p.value}'(으)로 바꾸면 Completed에서 진행 중 목록으로 돌아갑니다. 바꿀까요?`)) {
+        if (confirm(`입고 완료 상태를 '${p.value}'(으)로 바꾸면 입고 완료 목록에서 진행 중 목록으로 돌아갑니다. 바꿀까요?`)) {
           await save(s.id, { status: expected, inbound_date: s.inbound_date }, { status: p.value, inbound_date: null });
         }
         return;
@@ -163,7 +165,7 @@ function Editor({ col, s, ex, onAddException, onDone, save, act }: EditorProps) 
     input = (
       <select {...common} onChange={(e) => void pick(e.target.value)}>
         <option value="">—</option>
-        {ex.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+        {ex.map((o) => <option key={o.id} value={o.id}>{ko('exception', o.name)}</option>)}
         <option value="__new">+ 새 예외 상태…</option>
       </select>
     );
@@ -172,7 +174,7 @@ function Editor({ col, s, ex, onAddException, onDone, save, act }: EditorProps) 
     input = (
       <select {...common} onChange={(e) => void commit(e.target.value)}>
         {!col.required && <option value="">—</option>}
-        {opts.map((o) => <option key={o}>{o}</option>)}
+        {opts.map((o) => <option key={o} value={o}>{ko(col.key, o)}</option>)}
       </select>
     );
   } else if (col.kind === 'textarea') {
@@ -250,10 +252,10 @@ function RowMenu({ s, act }: { s: Shipment; act: RowCtx['act'] }) {
             {s.delay_confirmed && item('지연 해제', 'clear')}
             {s.status !== '창고 입고 완료' && item('창고 입고 완료 처리', 'inbound')}
             <hr />
-            {item('Archive', 'archive')}
+            {item('보관함으로 이동', 'archive')}
           </>}
           {s.location !== 'active' && item('복구', 'restore')}
-          {s.location !== 'trashed' && item('삭제 (Trash로 이동)', 'trash')}
+          {s.location !== 'trashed' && item('삭제 (휴지통으로 이동)', 'trash')}
           {s.location === 'trashed' && <button className="ghost danger-text" onClick={() => { setOpen(false); act('purge'); }}>영구 삭제…</button>}
         </div>
       )}

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { COLUMNS, fmtDate } from './columns';
+import { ko } from './ko';
 import type { Activity } from './types';
 
 const ACTION: Record<string, string> = {
   create: '신규 등록', update: '수정', status_change: '상태 변경', delay_confirm: '지연 확정', delay_clear: '지연 해제',
-  inbound_complete: '창고 입고 완료', archive: 'Archive', trash: '삭제(Trash)', restore: '복구', purge: '영구 삭제',
+  inbound_complete: '창고 입고 완료', archive: '보관함으로 이동', trash: '휴지통으로 이동', restore: '복구', purge: '영구 삭제',
   exception_type_add: '예외 상태 추가',
 };
 const FIELD: Record<string, string> = {
@@ -26,8 +27,10 @@ function fmtValue(field: string | null, v: string | null) {
   if (v == null || v === '') return '(빈 값)';
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return fmtDate(v);
   if (v.startsWith('[')) { try { return (JSON.parse(v) as string[]).join(', ') || '(빈 값)'; } catch { /* 그대로 */ } }
+  if (field === 'ship_mode' || field === 'shipment_type' || field === 'delay_stage') return ko(field, v);
+  if (field === 'exception_id') return ko('exception', v);
   if (field === 'delay_confirmed') return v === 'true' ? '지연' : '해제';
-  if (field === 'location') return ({ active: '목록', archived: 'Archive', trashed: 'Trash' } as Record<string, string>)[v] ?? v;
+  if (field === 'location') return ({ active: '목록', archived: '보관함', trashed: '휴지통' } as Record<string, string>)[v] ?? v;
   return v;
 }
 

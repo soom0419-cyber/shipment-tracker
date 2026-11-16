@@ -239,3 +239,19 @@ button.danger { background: var(--danger); border-color: var(--danger); color: #
   .acts-table .what { grid-column: 1 / -1; }
   .modal { padding: 18px; }
 }
+
+/* 칸 구분선 */
+.grid th, .grid td { border-right: 1px solid var(--line); }
+.grid th:last-child, .grid td:last-child { border-right: 0; }
+.grid .sticky-last { border-right: 1px solid var(--line-strong); box-shadow: none; }
+.grid th { background: var(--surface); color: var(--text); }
+.grid tr.group-row td { border-right: 0; }
+
+/* PC·태블릿: 표가 남은 화면을 채우고, 최근 변경은 화면 맨 아래 고정 */
+@media (min-width: 768px) {
+  .app { height: 100vh; display: flex; flex-direction: column; padding-bottom: 16px; }
+  .app > * { flex: none; }
+  .app > .table-wrap { flex: 1 1 auto; min-height: 240px; overflow: auto; }
+  .app > .activity-page { flex: 1 1 auto; overflow: auto; align-content: start; }
+  .app > .recent { margin-top: 14px; max-height: 200px; overflow: auto; border-top: 1px solid var(--line); padding-top: 10px; }
+}

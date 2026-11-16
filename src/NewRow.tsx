@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import type { Col } from './columns';
 import { COLUMNS, LAST_STICKY, STICKY_LEFT, isUrl, parseInput } from './columns';
+import { ko } from './ko';
 import type { ShipmentInput } from './types';
 
 const DRAFT_KEY = 'st-draft';
@@ -92,7 +93,7 @@ function Field({ c, v, set }: { c: Col; v: string; set: (v: string) => void }) {
     return (
       <select value={v} onChange={(e) => set(e.target.value)}>
         {!c.required && <option value="">—</option>}
-        {(c.options ?? []).filter((o) => o !== '창고 입고 완료').map((o) => <option key={o}>{o}</option>)}
+        {(c.options ?? []).filter((o) => o !== '창고 입고 완료').map((o) => <option key={o} value={o}>{ko(c.key, o)}</option>)}
       </select>
     );
   }
