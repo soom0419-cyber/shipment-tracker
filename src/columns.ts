@@ -37,8 +37,24 @@ export const COLUMNS: Col[] = [
 
 export const LAST_STICKY = 'status';
 // 고정 컬럼 left 위치
-export const STICKY_LEFT: Record<string, number> = {};
-COLUMNS.reduce((left, c) => (c.sticky ? ((STICKY_LEFT[c.key] = left), left + c.width) : left), 0);
+// 고정 컬럼 left 위치 / 칸 폭은 CSS 변수(--l-키, --w-키)로 주고, 표 너비에 맞춰 Tracker가 값을 바꾼다
+export const stickyLeft = (key: string) => `var(--l-${key})`;
+export const colWidth = (key: string) => `var(--w-${key})`;
+const TOTAL_W = COLUMNS.reduce((n, c) => n + c.width, 0);
+const MIN_SCALE = 0.85;   // 이보다 좁아지면 줄이지 않고 가로 스크롤
+
+// 표 영역 너비 → 칸별 폭·고정 칸 위치 (기본 폭 비율 유지, 버림으로 합계가 넘치지 않게)
+export function colVars(areaWidth: number): Record<string, string> {
+  const scale = Math.max(MIN_SCALE, areaWidth / TOTAL_W);
+  const v: Record<string, string> = {};
+  let left = 0;
+  for (const c of COLUMNS) {
+    const w = Math.floor(c.width * scale);
+    v[`--w-${c.key}`] = `${w}px`;
+    if (c.sticky) { v[`--l-${c.key}`] = `${left}px`; left += w; }
+  }
+  return v;
+}
 
 // ── 표시 형식 ──
 export const fmtDate = (d: string | null) => (d ? d.replaceAll('-', '.') : '');

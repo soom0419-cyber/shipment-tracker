@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Col } from './columns';
-import { LAST_STICKY, STICKY_LEFT, bookingOf, exceptionName, fmtAgo, fmtDate, fmtInt, isUrl, parseInput, toInput } from './columns';
+import { LAST_STICKY, stickyLeft, bookingOf, exceptionName, fmtAgo, fmtDate, fmtInt, isUrl, parseInput, toInput } from './columns';
 import type { Candidate } from './delay';
 import { etaMissing } from './delay';
 import { ko } from './ko';
@@ -106,7 +106,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
 export function Cell({ col, s, ex, editing, canEdit, dupNo, onEdit, save, onAddException, row }: Props) {
   const editable = Boolean(col.field) && canEdit;
   const cls = `${col.right ? 'r' : ''} ${editable ? 'editable' : ''} ${col.sticky ? 'sticky' : ''} ${col.key === LAST_STICKY ? 'sticky-last' : ''}`;
-  const style = col.sticky ? { left: STICKY_LEFT[col.key] } : undefined;
+  const style = col.sticky ? { left: stickyLeft(col.key) } : undefined;
 
   if (col.kind === 'mail') return <td className={cls}><MailCell s={s} canEdit={canEdit} save={save} /></td>;
   if (col.kind === 'menu') return <td className="menu-cell">{row.menu && <RowMenu s={s} act={row.act} ex={ex} setExc={row.setExc} />}</td>;

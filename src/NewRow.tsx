@@ -1,7 +1,7 @@
 // 신규 입력 행. 입력 내용은 이 브라우저(localStorage)에만 자동 저장되고, 저장을 눌러야 공용 목록에 등록된다.
 import { useEffect, useState } from 'react';
 import type { Col } from './columns';
-import { COLUMNS, LAST_STICKY, STICKY_LEFT, isUrl, parseInput } from './columns';
+import { COLUMNS, LAST_STICKY, stickyLeft, isUrl, parseInput } from './columns';
 import { ko } from './ko';
 import type { ShipmentInput } from './types';
 
@@ -64,7 +64,7 @@ export function NewRow({ existingNos, restored, onSave, onClose }: Props) {
     <>
       <tr className="new-row">
         {COLUMNS.map((c) => (
-          <td key={c.key} className={`${c.sticky ? 'sticky' : ''} ${c.key === LAST_STICKY ? 'sticky-last' : ''} ${c.right ? 'r' : ''}`} style={c.sticky ? { left: STICKY_LEFT[c.key] } : undefined}>
+          <td key={c.key} className={`${c.sticky ? 'sticky' : ''} ${c.key === LAST_STICKY ? 'sticky-last' : ''} ${c.right ? 'r' : ''}`} style={c.sticky ? { left: stickyLeft(c.key) } : undefined}>
             {c.field ? <Field c={c} v={d[c.key] ?? ''} set={(v) => set(c.key, v)} /> : null}
             {errs[c.key] && <div className="cell-err">{errs[c.key]}</div>}
             {c.key === 'shipment_no' && dup && <div className="warn">같은 번호가 이미 있습니다 (등록은 가능)</div>}

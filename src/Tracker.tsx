@@ -6,7 +6,7 @@ import { candidateOf, clearSuggested, stageOfStatus, todayKST } from './delay';
 import { DelayDialog, InboundDialog, PurgeDialog } from './Dialogs';
 import { downloadXlsx } from './excel';
 import { ko } from './ko';
-import { COLUMNS, LAST_STICKY, STICKY_LEFT, bookingOf, exceptionName } from './columns';
+import { COLUMNS, LAST_STICKY, bookingOf, colVars, colWidth, exceptionName, stickyLeft } from './columns';
 import { NewRow, loadDraft } from './NewRow';
 import type { Activity, ExceptionType, Shipment, ShipmentInput } from './types';
 import { SHIP_MODES, STATUSES } from './types';
@@ -73,6 +73,17 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
     toastTimer.current = window.setTimeout(() => setToast(null), 8000);
   };
   const today = todayKST();
+
+  // 표 영역 너비가 바뀌면(창 크기 조절·스크롤바) 칸 폭을 다시 계산
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [widths, setWidths] = useState(() => colVars(0));
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setWidths(colVars(el.clientWidth)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [view]);
   const timer = useRef<number>();
 
   const load = useCallback(async () => {
@@ -359,13 +370,13 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
         <span className="muted small count">{shown.length} / {active.length}건</span>
       </div>
 
-      <div className="table-wrap">
+      <div className="table-wrap" ref={wrapRef} style={widths as React.CSSProperties}>
         <table className="grid">
-          <colgroup>{COLUMNS.map((c) => <col key={c.key} style={{ width: c.width }} />)}</colgroup>
+          <colgroup>{COLUMNS.map((c) => <col key={c.key} style={{ width: colWidth(c.key) }} />)}</colgroup>
           <thead>
             <tr>
               {COLUMNS.map((c) => (
-                <th key={c.key} className={`${c.sticky ? 'sticky' : ''} ${c.key === LAST_STICKY ? 'sticky-last' : ''} ${c.right ? 'r' : ''}`} style={c.sticky ? { left: STICKY_LEFT[c.key] } : undefined}
+                <th key={c.key} className={`${c.sticky ? 'sticky' : ''} ${c.key === LAST_STICKY ? 'sticky-last' : ''} ${c.right ? 'r' : ''}`} style={c.sticky ? { left: stickyLeft(c.key) } : undefined}
                   onClick={() => setSort({ key: c.key, asc: sort.key === c.key ? !sort.asc : true })}>
                   {c.label}{sort.key === c.key ? (sort.asc ? ' ▲' : ' ▼') : ''}
                 </th>
