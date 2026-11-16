@@ -206,6 +206,16 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
     } catch (x) { setSaveState({ kind: 'error', msg: (x as Error).message }); return false; }
   };
 
+  const setExc = (s: Shipment) => async (v: number | null | 'new') => {
+    let id: number | null = v === 'new' ? null : v;
+    if (v === 'new') {
+      const n = prompt('새 예외 상태 이름 (모든 팀원의 선택지에 추가됩니다)')?.trim();
+      id = n ? await addException(n) : null;
+      if (id == null) return;
+    }
+    void save(s.id, { exception_id: s.exception_id }, { exception_id: id });
+  };
+
   const saveDelay = (s: Shipment) => async ({ stage, reason, date }: { stage: 'ETD' | 'ETA'; reason: string; date: string }) => {
     const dateField = stage === 'ETD' ? 'etd' : 'eta';
     const next: Record<string, unknown> = { delay_confirmed: true, delay_reason: reason, delay_stage: stage };
@@ -368,9 +378,9 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
               const sg = suggestOf(s);
               const showSg = sg && online && !dismissed.includes(`${s.id}:${sg.to}`) ? sg : null;
               const row = readOnly
-                ? { suggest: null, cand: null, clearSug: false, act: act(s, null), menu: online }
+                ? { suggest: null, cand: null, clearSug: false, act: act(s, null), menu: online, setExc: setExc(s) }
                 : {
-                  suggest: showSg, cand: online ? candidateOf(s, today) : null, act: act(s, showSg), menu: online,
+                  suggest: showSg, cand: online ? candidateOf(s, today) : null, act: act(s, showSg), menu: online, setExc: setExc(s),
                   clearSug: online && clearSuggested(s) && !dismissed.includes(`${s.id}:clear:${s.delay_confirmed_at}`),
                 };
               const head = grouped && (i === 0 || shown[i - 1].status !== s.status);

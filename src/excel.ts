@@ -19,6 +19,7 @@ function value(key: string, s: Shipment, ex: ExceptionType[]): CellV {
       return parts.filter(Boolean).join(' / ') || null;
     }
     case 'booking': return bookingOf(s);
+    case 'status': { const x = value('exception', s, ex); return x ? `${s.status} / ${x}` : s.status; }
     case 'ship_mode': case 'shipment_type': return ko(key, s[key]) || null;
     case 'seasons': return s.seasons.join(', ') || null;
     case 'mail_links': return s.mail_links.join('\n') || null;

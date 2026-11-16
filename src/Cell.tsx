@@ -4,6 +4,8 @@ import { LAST_STICKY, STICKY_LEFT, bookingOf, exceptionName, fmtAgo, fmtDate, fm
 import type { Candidate } from './delay';
 import { etaMissing } from './delay';
 import { ko } from './ko';
+
+const EXC_COL = { key: 'exception', label: '', width: 0, kind: 'readonly' } as Col;
 import type { ExceptionType, Shipment, Status } from './types';
 
 export type Save = (id: string, expected: Record<string, unknown>, next: Record<string, unknown>) => Promise<boolean>;
@@ -24,7 +26,10 @@ interface Props {
 // 행 단위 작업 (지연·입고·제안). 실제 처리는 Tracker가 한다.
 export type RowAction = 'delay' | 'advance' | 'clear' | 'dismiss-clear' | 'inbound' | 'accept-suggest' | 'dismiss-suggest'
   | 'archive' | 'trash' | 'restore' | 'purge';
-export interface RowCtx { suggest: Suggestion | null; cand: Candidate | null; clearSug: boolean; act: (a: RowAction) => void; menu: boolean }
+export interface RowCtx {
+  suggest: Suggestion | null; cand: Candidate | null; clearSug: boolean; act: (a: RowAction) => void; menu: boolean;
+  setExc: (v: number | null | 'new') => void;
+}
 
 // 시스템이 제안하는 상태 변경 (사용자가 눌러야만 적용)
 export interface Suggestion { to: Status; why: string }
@@ -48,6 +53,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
       return (
         <>
           <span className={`badge ${STATUS_TONE[s.status]}`}>{s.status}</span>
+          <div className="flags"><Display col={EXC_COL} s={s} ex={ex} dupNo={false} row={row} /></div>
           {suggest && (
             <div className="suggest" onClick={stop} title={suggest.why}>
               <button className="link" onClick={() => act('accept-suggest')}>→ {suggest.to}?</button>
@@ -88,7 +94,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
     case 'pcs': return <>{fmtInt(s.pcs)}</>;
     case 'seasons': return <>{s.seasons.join(', ')}</>;
     case 'ship_mode': case 'shipment_type': return <>{ko(col.key, s[col.key])}</>;
-    case 'remark': return <span className="clip" title={s.remark ?? ''}>{s.remark?.split('\n')[0]}</span>;
+    case 'remark': return <span className="pre">{s.remark}</span>;
     case 'updated': return <span className="muted small">{s.updated_by} · {fmtAgo(s.updated_at)}</span>;
     default: {
       const v = col.field ? s[col.field] : null;
@@ -103,7 +109,7 @@ export function Cell({ col, s, ex, editing, canEdit, dupNo, onEdit, save, onAddE
   const style = col.sticky ? { left: STICKY_LEFT[col.key] } : undefined;
 
   if (col.kind === 'mail') return <td className={cls}><MailCell s={s} canEdit={canEdit} save={save} /></td>;
-  if (col.kind === 'menu') return <td className="menu-cell">{row.menu && <RowMenu s={s} act={row.act} />}</td>;
+  if (col.kind === 'menu') return <td className="menu-cell">{row.menu && <RowMenu s={s} act={row.act} ex={ex} setExc={row.setExc} />}</td>;
 
   if (!editing || !editable) {
     return (
@@ -232,7 +238,7 @@ function MailCell({ s, canEdit, save }: { s: Shipment; canEdit: boolean; save: S
   );
 }
 
-function RowMenu({ s, act }: { s: Shipment; act: RowCtx['act'] }) {
+function RowMenu({ s, act, ex, setExc }: { s: Shipment; act: RowCtx['act']; ex: ExceptionType[]; setExc: RowCtx['setExc'] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -251,6 +257,12 @@ function RowMenu({ s, act }: { s: Shipment; act: RowCtx['act'] }) {
             {item(s.delay_confirmed ? '지연 수정' : '지연 등록', 'delay')}
             {s.delay_confirmed && item('지연 해제', 'clear')}
             {s.status !== '창고 입고 완료' && item('창고 입고 완료 처리', 'inbound')}
+            <hr />
+            {ex.filter((e) => e.id !== s.exception_id).map((e) => (
+              <button key={e.id} className="ghost" onClick={() => { setOpen(false); setExc(e.id); }}>예외 상태: {ko('exception', e.name)}</button>
+            ))}
+            {s.exception_id != null && <button className="ghost" onClick={() => { setOpen(false); setExc(null); }}>예외 상태 해제</button>}
+            <button className="ghost" onClick={() => { setOpen(false); setExc('new'); }}>+ 새 예외 상태…</button>
             <hr />
             {item('보관함으로 이동', 'archive')}
           </>}

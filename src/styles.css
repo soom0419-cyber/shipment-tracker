@@ -258,3 +258,21 @@ button.danger { background: var(--danger); border-color: var(--danger); color: #
 
 .acts-table { table-layout: fixed; }
 .acts-table .what { word-break: break-word; overflow-wrap: anywhere; }
+
+/* 표: 가운데 정렬 · 잘림 없이 줄바꿈 · 좁은 여백 */
+table.grid { min-width: 0; font-size: 13px; }
+.grid th, .grid td {
+  text-align: center !important; padding: 8px 5px; white-space: normal; overflow: visible; text-overflow: clip;
+  word-break: keep-all; overflow-wrap: anywhere; line-height: 1.4;
+}
+.grid th { font-size: 12px; }
+.grid .clip { display: inline; white-space: normal; overflow: visible; text-overflow: clip; }
+.grid .pre { white-space: pre-wrap; }
+.grid .sub { white-space: normal; text-overflow: clip; }
+.grid .acts { justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
+.flags { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
+.flags:empty, .flags:not(:has(*)) { display: none; }
+.flags .badge { font-size: 11px; padding: 2px 7px; }
+.grid .suggest { margin: 4px 0 0; justify-content: center; }
+.grid td.menu-cell { padding: 0 !important; }
+.grid .mail .mini { padding: 3px 6px; }
