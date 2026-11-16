@@ -276,3 +276,9 @@ table.grid { min-width: 0; font-size: 13px; }
 .grid .suggest { margin: 4px 0 0; justify-content: center; }
 .grid td.menu-cell { padding: 0 !important; }
 .grid .mail .mini { padding: 3px 6px; }
+
+/* 창 너비에 맞춘 글자 크기 */
+table.grid { font-size: var(--fs, 13px); }
+.grid th { font-size: calc(var(--fs, 13px) - 1px); }
+.grid .badge { font-size: calc(var(--fs, 13px) - 1px); padding: 2px 7px; }
+.grid th, .grid td { padding-left: 3px; padding-right: 3px; }

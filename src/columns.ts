@@ -41,12 +41,13 @@ export const LAST_STICKY = 'status';
 export const stickyLeft = (key: string) => `var(--l-${key})`;
 export const colWidth = (key: string) => `var(--w-${key})`;
 const TOTAL_W = COLUMNS.reduce((n, c) => n + c.width, 0);
-const MIN_SCALE = 0.85;   // 이보다 좁아지면 줄이지 않고 가로 스크롤
+const MIN_SCALE = 0.6;   // 이보다 좁아지면(약 820px 미만) 줄이지 않고 가로 스크롤
 
 // 표 영역 너비 → 칸별 폭·고정 칸 위치 (기본 폭 비율 유지, 버림으로 합계가 넘치지 않게)
 export function colVars(areaWidth: number): Record<string, string> {
   const scale = Math.max(MIN_SCALE, areaWidth / TOTAL_W);
-  const v: Record<string, string> = {};
+  // 좁은 화면에서는 글자도 조금 작게 (13px → 최소 11px)
+  const v: Record<string, string> = { '--fs': `${Math.max(11, Math.min(13, Math.round(13 * scale)))}px` };
   let left = 0;
   for (const c of COLUMNS) {
     const w = Math.floor(c.width * scale);
