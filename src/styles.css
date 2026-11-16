@@ -255,3 +255,6 @@ button.danger { background: var(--danger); border-color: var(--danger); color: #
   .app > .activity-page { flex: 1 1 auto; overflow: auto; align-content: start; }
   .app > .recent { margin-top: 14px; max-height: 200px; overflow: auto; border-top: 1px solid var(--line); padding-top: 10px; }
 }
+
+.acts-table { table-layout: fixed; }
+.acts-table .what { word-break: break-word; overflow-wrap: anywhere; }

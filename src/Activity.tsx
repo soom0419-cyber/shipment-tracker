@@ -26,6 +26,7 @@ export const fmtTime = (iso: string) => {
 function fmtValue(field: string | null, v: string | null) {
   if (v == null || v === '') return '(빈 값)';
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return fmtDate(v);
+  if (field === 'mail_links') { try { const n = (JSON.parse(v) as string[]).length; return n ? `링크 ${n}개` : '(빈 값)'; } catch { /* 그대로 */ } }
   if (v.startsWith('[')) { try { return (JSON.parse(v) as string[]).join(', ') || '(빈 값)'; } catch { /* 그대로 */ } }
   if (field === 'ship_mode' || field === 'shipment_type' || field === 'delay_stage') return ko(field, v);
   if (field === 'exception_id') return ko('exception', v);
