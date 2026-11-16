@@ -286,3 +286,5 @@ table.grid { font-size: var(--fs, 13px); }
 table.grid { width: var(--tw, max-content); }
 .grid .mail .mini { white-space: normal; line-height: 1.3; }
 .grid .badge { white-space: normal; }
+
+.grid td.menu-cell .mini { padding: 2px 0; width: 100%; min-width: 0; }
