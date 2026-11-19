@@ -306,7 +306,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   return (
     <div className="app">
       <header className="top">
-        <span className="brand">선적 관리</span>
+        <span className="brand">✈️ 선적 관리</span>
         <nav>
           <a className={view === 'main' ? 'on' : ''} onClick={() => { setView('main'); setF(NO_FILTER); }}>진행 중</a>
           <a className={view === 'completed' ? 'on' : ''} onClick={() => { setView('completed'); setF(NO_FILTER); }}>입고 완료 <span className="muted small">{doneRows.length}</span></a>

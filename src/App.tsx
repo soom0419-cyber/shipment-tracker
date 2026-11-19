@@ -43,7 +43,7 @@ function Gate({ name, onDone }: { name: string; onDone: (name: string) => void }
   };
   return (
     <form className="gate" onSubmit={submit}>
-      <h1>선적 관리</h1>
+      <h1>✈️ 선적 관리</h1>
       <label>이름<input value={n} onChange={(e) => setN(e.target.value)} placeholder="수정 이력에 표시됩니다" autoFocus /></label>
       <label>팀 접속 코드<input type="password" value={code} onChange={(e) => setCode(e.target.value)} /></label>
       <button className="primary" disabled={busy}>{busy ? '확인 중…' : '입장'}</button>
