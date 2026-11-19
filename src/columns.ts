@@ -40,19 +40,17 @@ export const LAST_STICKY = 'status';
 // 고정 컬럼 left 위치 / 칸 폭은 CSS 변수(--l-키, --w-키)로 주고, 표 너비에 맞춰 Tracker가 값을 바꾼다
 export const stickyLeft = (key: string) => `var(--l-${key})`;
 export const colWidth = (key: string) => `var(--w-${key})`;
-const FONT = 15;          // 표 기본 글자 크기(px)
-const GROW = FONT / 13;   // 글자를 키운 만큼 기본 칸 폭도 키움
-const TOTAL_W = COLUMNS.reduce((n, c) => n + c.width, 0) * GROW;
-const MIN_SCALE = 0.45;   // 이보다 좁아지면(약 840px 미만) 줄이지 않고 가로 스크롤
+const TOTAL_W = COLUMNS.reduce((n, c) => n + c.width, 0);
+const MIN_SCALE = 0.6;   // 이보다 좁아지면(약 820px 미만) 줄이지 않고 가로 스크롤
 
 // 표 영역 너비 → 칸별 폭·고정 칸 위치 (기본 폭 비율 유지, 버림으로 합계가 넘치지 않게)
 export function colVars(areaWidth: number): Record<string, string> {
   const scale = Math.max(MIN_SCALE, areaWidth / TOTAL_W);
-  // 좁은 화면에서는 글자도 조금 작게 (15px → 최소 12px)
-  const v: Record<string, string> = { '--fs': `${Math.max(12, Math.min(FONT, Math.round(FONT * scale)))}px` };
+  // 좁은 화면에서는 글자도 조금 작게 (13px → 최소 11px)
+  const v: Record<string, string> = { '--fs': `${Math.max(11, Math.min(13, Math.round(13 * scale)))}px` };
   let left = 0, total = 0;
   for (const c of COLUMNS) {
-    const w = Math.floor(c.width * GROW * scale);
+    const w = Math.floor(c.width * scale);
     v[`--w-${c.key}`] = `${w}px`;
     if (c.sticky) { v[`--l-${c.key}`] = `${left}px`; left += w; }
     total += w;
