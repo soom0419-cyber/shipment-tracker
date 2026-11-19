@@ -278,9 +278,9 @@ table.grid { min-width: 0; font-size: 18px; }
 .grid .mail .mini { padding: 3px 6px; }
 
 /* 창 너비에 맞춘 글자 크기 */
-table.grid { font-size: var(--fs, 18px); }
-.grid th { font-size: calc(var(--fs, 18px) - 1px); }
-.grid .badge { font-size: calc(var(--fs, 18px) - 1px); padding: 2px 7px; }
+table.grid { font-size: var(--fs, 15px); }
+.grid th { font-size: calc(var(--fs, 15px) - 1px); }
+.grid .badge { font-size: calc(var(--fs, 15px) - 1px); padding: 2px 7px; }
 .grid th, .grid td { padding-left: 3px; padding-right: 3px; }
 
 table.grid { width: var(--tw, max-content); }
@@ -288,3 +288,22 @@ table.grid { width: var(--tw, max-content); }
 .grid .badge { white-space: normal; }
 
 .grid td.menu-cell .mini { padding: 2px 0; width: 100%; min-width: 0; }
+
+/* 중요도 하이라이트 */
+.grid tr.pri-2 td { background: #fdecea; }
+.grid tr.pri-1 td { background: #fff6dc; }
+.grid tbody tr.pri-2:hover td { background: #fbdcd8; }
+.grid tbody tr.pri-1:hover td { background: #ffefc4; }
+.grid tr.pri-2 td:first-child { box-shadow: inset 4px 0 0 var(--danger); }
+.grid tr.pri-1 td:first-child { box-shadow: inset 4px 0 0 #e0a100; }
+.pri-tag { display: inline-block; font-size: calc(var(--fs, 15px) - 3px); font-weight: 600; padding: 0 6px; border-radius: 6px; margin-right: 4px; vertical-align: 1px; }
+.pri-tag.p2 { background: var(--danger); color: #fff; }
+.pri-tag.p1 { background: #e0a100; color: #fff; }
+
+/* 최근 변경·변경 이력: 커진 글자에 맞춰 칸 폭 확보, 겹침 없이 줄바꿈 */
+.acts-table { font-size: 15px; }
+.acts-table td { white-space: normal; overflow-wrap: anywhere; }
+.acts-table .when { width: 170px; }
+.acts-table .who { width: 120px; }
+.acts-table .no { width: 150px; }
+.recent-head { font-size: 15px; }

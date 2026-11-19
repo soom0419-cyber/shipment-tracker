@@ -29,6 +29,7 @@ export interface Shipment {
   delay_reason: string | null;
   delay_confirmed_at: string | null;
   delay_stage: 'ETD' | 'ETA' | null;
+  priority?: number;   // 0 없음, 1 중요, 2 긴급
   inbound_date: string | null;
   location: Location;
   created_by: string;

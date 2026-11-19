@@ -217,6 +217,8 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
     } catch (x) { setSaveState({ kind: 'error', msg: (x as Error).message }); return false; }
   };
 
+  const setPri = (s: Shipment) => (v: number) => void save(s.id, { priority: s.priority ?? 0 }, { priority: v });
+
   const setExc = (s: Shipment) => async (v: number | null | 'new') => {
     let id: number | null = v === 'new' ? null : v;
     if (v === 'new') {
@@ -389,9 +391,9 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
               const sg = suggestOf(s);
               const showSg = sg && online && !dismissed.includes(`${s.id}:${sg.to}`) ? sg : null;
               const row = readOnly
-                ? { suggest: null, cand: null, clearSug: false, act: act(s, null), menu: online, setExc: setExc(s) }
+                ? { suggest: null, cand: null, clearSug: false, act: act(s, null), menu: online, setExc: setExc(s), setPri: setPri(s) }
                 : {
-                  suggest: showSg, cand: online ? candidateOf(s, today) : null, act: act(s, showSg), menu: online, setExc: setExc(s),
+                  suggest: showSg, cand: online ? candidateOf(s, today) : null, act: act(s, showSg), menu: online, setExc: setExc(s), setPri: setPri(s),
                   clearSug: online && clearSuggested(s) && !dismissed.includes(`${s.id}:clear:${s.delay_confirmed_at}`),
                 };
               const head = grouped && (i === 0 || shown[i - 1].status !== s.status);
@@ -402,7 +404,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
                       <span className={`badge ${STATUS_TONE[s.status]}`}>{s.status}</span> {shown.filter((x) => x.status === s.status).length}건
                     </span></td></tr>
                   )}
-                  <tr id={`row-${s.id}`} className={`${isCancelled(s) ? 'cancelled' : ''} ${highlight === s.id ? 'flash' : ''}`}>
+                  <tr id={`row-${s.id}`} className={`${isCancelled(s) ? 'cancelled' : ''} ${highlight === s.id ? 'flash' : ''} ${(s.priority ?? 0) > 0 ? `pri-${s.priority}` : ''}`}>
                     {COLUMNS.map((c) => (
                       <Cell key={c.key} col={c} s={s} ex={ex} canEdit={online && !readOnly}
                         dupNo={(noCount.get(s.shipment_no.trim().toLowerCase()) ?? 0) > 1}

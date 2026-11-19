@@ -44,6 +44,7 @@ create table shipments (
   delay_reason        text,
   delay_confirmed_at  timestamptz,
   delay_stage         text check (delay_stage in ('ETD', 'ETA')),   -- 어느 일정이 지연됐는지 (해제 제안용)
+  priority            smallint not null default 0 check (priority between 0 and 2),   -- 중요도: 0 없음, 1 중요, 2 긴급
   inbound_date        date,
   location            record_location not null default 'active',
   created_by          text not null check (btrim(created_by) <> ''),
@@ -211,7 +212,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   allowed text[] := array['shipment_no', 'origin_country', 'ship_mode', 'shipment_type', 'seasons', 'cartons',
     'pcs', 'content', 'etd', 'eta', 'status', 'exception_id', 'bl_awb_no', 'remark', 'mail_links',
-    'delay_confirmed', 'delay_reason', 'delay_stage', 'inbound_date', 'location'];
+    'delay_confirmed', 'delay_reason', 'delay_stage', 'inbound_date', 'location', 'priority'];
   cur jsonb; k text; sets text := '';
 begin
   if not is_member() then raise exception 'not a member' using errcode = '42501'; end if;

@@ -29,6 +29,7 @@ export type RowAction = 'delay' | 'advance' | 'clear' | 'dismiss-clear' | 'inbou
 export interface RowCtx {
   suggest: Suggestion | null; cand: Candidate | null; clearSug: boolean; act: (a: RowAction) => void; menu: boolean;
   setExc: (v: number | null | 'new') => void;
+  setPri: (v: number) => void;
 }
 
 // 시스템이 제안하는 상태 변경 (사용자가 눌러야만 적용)
@@ -48,7 +49,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
   const { suggest, cand, clearSug, act } = row;
   switch (col.key) {
     case 'shipment_no':
-      return <>{s.shipment_no}{dupNo && <span className="dup" title="같은 번호가 이미 있습니다"> ⚠</span>}</>;
+      return <>{(s.priority ?? 0) > 0 && <span className={`pri-tag p${s.priority}`}>{s.priority === 2 ? '긴급' : '중요'}</span>}{s.shipment_no}{dupNo && <span className="dup" title="같은 번호가 이미 있습니다"> ⚠</span>}</>;
     case 'status':
       return (
         <>
@@ -109,7 +110,7 @@ export function Cell({ col, s, ex, editing, canEdit, dupNo, onEdit, save, onAddE
   const style = col.sticky ? { left: stickyLeft(col.key) } : undefined;
 
   if (col.kind === 'mail') return <td className={cls}><MailCell s={s} canEdit={canEdit} save={save} /></td>;
-  if (col.kind === 'menu') return <td className="menu-cell">{row.menu && <RowMenu s={s} act={row.act} ex={ex} setExc={row.setExc} />}</td>;
+  if (col.kind === 'menu') return <td className="menu-cell">{row.menu && <RowMenu s={s} act={row.act} ex={ex} setExc={row.setExc} setPri={row.setPri} />}</td>;
 
   if (!editing || !editable) {
     return (
@@ -238,7 +239,7 @@ function MailCell({ s, canEdit, save }: { s: Shipment; canEdit: boolean; save: S
   );
 }
 
-function RowMenu({ s, act, ex, setExc }: { s: Shipment; act: RowCtx['act']; ex: ExceptionType[]; setExc: RowCtx['setExc'] }) {
+function RowMenu({ s, act, ex, setExc, setPri }: { s: Shipment; act: RowCtx['act']; ex: ExceptionType[]; setExc: RowCtx['setExc']; setPri: RowCtx['setPri'] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -254,6 +255,10 @@ function RowMenu({ s, act, ex, setExc }: { s: Shipment; act: RowCtx['act']; ex: 
       {open && (
         <div className="pop menu">
           {s.location === 'active' && <>
+            {([[2, '🔴 중요도: 긴급'], [1, '🟡 중요도: 중요'], [0, '중요도 해제']] as const)
+              .filter(([v]) => v !== (s.priority ?? 0))
+              .map(([v, label]) => <button key={v} className="ghost" onClick={() => { setOpen(false); setPri(v); }}>{label}</button>)}
+            <hr />
             {item(s.delay_confirmed ? '지연 수정' : '지연 등록', 'delay')}
             {s.delay_confirmed && item('지연 해제', 'clear')}
             {s.status !== '창고 입고 완료' && item('창고 입고 완료 처리', 'inbound')}

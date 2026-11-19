@@ -10,7 +10,7 @@ const ACTION: Record<string, string> = {
 };
 const FIELD: Record<string, string> = {
   ...Object.fromEntries(COLUMNS.filter((c) => c.field).map((c) => [c.field!, c.label])),
-  exception_id: '예외 상태', delay_confirmed: '지연', delay_reason: '지연 사유', delay_stage: '지연 구분',
+  exception_id: '예외 상태', delay_confirmed: '지연', delay_reason: '지연 사유', delay_stage: '지연 구분', priority: '중요도',
   inbound_date: '입고일', location: '위치',
 };
 // 알림 대상: 신규 등록, 상태 변경, 지연 확정, 입고 완료
@@ -29,6 +29,7 @@ function fmtValue(field: string | null, v: string | null) {
   if (field === 'mail_links') { try { const n = (JSON.parse(v) as string[]).length; return n ? `링크 ${n}개` : '(빈 값)'; } catch { /* 그대로 */ } }
   if (v.startsWith('[')) { try { return (JSON.parse(v) as string[]).join(', ') || '(빈 값)'; } catch { /* 그대로 */ } }
   if (field === 'ship_mode' || field === 'shipment_type' || field === 'delay_stage') return ko(field, v);
+  if (field === 'priority') return ({ '0': '없음', '1': '중요', '2': '긴급' } as Record<string, string>)[v] ?? v;
   if (field === 'exception_id') return ko('exception', v);
   if (field === 'delay_confirmed') return v === 'true' ? '지연' : '해제';
   if (field === 'location') return ({ active: '목록', archived: '보관함', trashed: '휴지통' } as Record<string, string>)[v] ?? v;

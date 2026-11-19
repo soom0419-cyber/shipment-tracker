@@ -18,7 +18,7 @@ await db.exec(`
 `);
 await db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 // 마이그레이션은 이미 적용된 DB에 다시 실행해도 안전해야 함
-for (const f of ['002_delay_stage.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
+for (const f of ['002_delay_stage.sql', '003_priority.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
 await db.query(`select set_access_code('test-code-1234')`);
 
 const as = async (uid, sql, params = []) => {
@@ -72,6 +72,9 @@ assert.equal(r.status, 'ok');
 await assert.rejects(() => upd(row.id, { delay_confirmed: false }, { delay_confirmed: true }), /delay_needs_reason/);
 r = await upd(row.id, { delay_confirmed: false, delay_reason: null, delay_stage: null }, { delay_confirmed: true, delay_reason: '항만 혼잡', delay_stage: 'ETA' });
 assert.equal(r.row.delay_stage, 'ETA');
+r = await upd(row.id, { priority: 0 }, { priority: 2 });
+assert.equal(r.row.priority, 2);
+await assert.rejects(() => upd(row.id, { priority: 2 }, { priority: 5 }), /check constraint/);
 assert.ok(r.row.delay_confirmed_at);
 
 // 8) 예외 상태: 이름으로 기록 / 사용자 추가 상태도 기록
@@ -100,7 +103,7 @@ const actions = (await log()).map((l) => `${l.action}:${l.field ?? ''}`);
 // 한 번의 수정 안에서 필드 순서는 jsonb 키 순서라 정렬해서 비교
 assert.deepEqual([...actions].sort(), [
   'create:', 'status_change:status', 'update:etd', 'inbound_complete:status', 'update:inbound_date',
-  'delay_confirm:delay_confirmed', 'update:delay_reason', 'update:delay_stage', 'update:exception_id', 'exception_type_add:',
+  'delay_confirm:delay_confirmed', 'update:delay_reason', 'update:delay_stage', 'update:priority', 'update:exception_id', 'exception_type_add:',
   'create:', 'trash:location', 'purge:',
 ].sort());
 assert.equal((await log()).find((l) => l.field === 'exception_id').new_value, 'On Hold');
