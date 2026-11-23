@@ -19,11 +19,11 @@ interface Filters {
 }
 const NO_FILTER: Filters = { q: '', season: '', country: '', mode: '', status: '', type: '', etdFrom: '', etdTo: '', etaFrom: '', etaTo: '', delay: '', exc: '' };
 type View = 'main' | 'completed' | 'archived' | 'trashed' | 'activity';
-const DONE = '창고 입고 완료';
+const DONE = '입고 완료';
 
 // 상태 변경 제안: 데이터를 보고 다음 단계를 제안만 한다 (자동 변경 없음)
 const suggestOf = (s: Shipment): Suggestion | null =>
-  s.bl_awb_no && STATUSES.indexOf(s.status) < 3 ? { to: '선적 완료', why: 'BL/AWB 번호가 입력되어 있습니다' } : null;
+  s.bl_awb_no && STATUSES.indexOf(s.status) < 3 ? { to: '운송 중', why: 'BL/AWB 번호가 입력되어 있습니다' } : null;
 
 const DISMISS_KEY = 'st-dismissed';
 const readDismissed = (): string[] => { try { return JSON.parse(localStorage.getItem(DISMISS_KEY) ?? '[]'); } catch { return []; } };
@@ -266,7 +266,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
       delayed: live.filter((s) => s.delay_confirmed).length,
       cand: live.filter((s) => candidateOf(s, today)).length,
       cancelled: mainRows.length - live.length,
-      byStatus: STATUSES.slice(0, 6).map((st) => [st, live.filter((s) => s.status === st).length] as const),
+      byStatus: STATUSES.slice(0, 5).map((st) => [st, live.filter((s) => s.status === st).length] as const),
     };
   }, [mainRows, isCancelled, today]);
   const opts = useMemo(() => ({
@@ -362,7 +362,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
         <select value={f.season} onChange={setFilter('season')}><option value="">시즌</option>{opts.seasons.map((o) => <option key={o}>{o}</option>)}</select>
         <select value={f.country} onChange={setFilter('country')}><option value="">출발 국가</option>{opts.countries.map((o) => <option key={o}>{o}</option>)}</select>
         <select value={f.mode} onChange={setFilter('mode')}><option value="">운송 방식</option>{SHIP_MODES.map((o) => <option key={o} value={o}>{ko('ship_mode', o)}</option>)}</select>
-        <select value={f.status} onChange={setFilter('status')}><option value="">진행 상태</option>{(view === 'main' ? STATUSES.slice(0, 6) : view === 'completed' ? [DONE] : STATUSES).map((o) => <option key={o}>{o}</option>)}</select>
+        <select value={f.status} onChange={setFilter('status')}><option value="">진행 상태</option>{(view === 'main' ? STATUSES.slice(0, 5) : view === 'completed' ? [DONE] : STATUSES).map((o) => <option key={o}>{o}</option>)}</select>
         <select value={f.type} onChange={setFilter('type')}><option value="">구분</option><option value="Product">상품</option><option value="Sample">샘플</option></select>
         <select value={f.delay} onChange={setFilter('delay')}><option value="">지연 여부</option><option value="yes">지연</option><option value="cand">지연 후보</option><option value="no">지연 아님</option></select>
         <label className="range">출항일 <input type="date" value={f.etdFrom} onChange={setFilter('etdFrom')} />~<input type="date" value={f.etdTo} onChange={setFilter('etdTo')} /></label>

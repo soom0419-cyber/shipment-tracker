@@ -5,7 +5,7 @@ import { ko } from './ko';
 import type { ExceptionType, Shipment } from './types';
 
 const LOCATION = (s: Shipment) =>
-  s.location === 'archived' ? '보관함' : s.location === 'trashed' ? '휴지통' : s.status === '창고 입고 완료' ? '입고 완료' : '진행 중';
+  s.location === 'archived' ? '보관함' : s.location === 'trashed' ? '휴지통' : s.status === '입고 완료' ? '입고 완료' : '진행 중';
 
 type CellV = string | number | Date | null;
 

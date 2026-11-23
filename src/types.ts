@@ -1,5 +1,5 @@
 export const STATUSES = [
-  '선적 예정', '부킹 대기', '부킹 완료', '선적 완료', '운송 중', '입항 완료', '창고 입고 완료',
+  '선적 예정', '부킹 대기', '부킹 완료', '운송 중', '통관 중', '입고 완료',
 ] as const;
 export type Status = (typeof STATUSES)[number];
 export const SHIP_MODES = ['SEA', 'AIR', 'DHL'] as const;

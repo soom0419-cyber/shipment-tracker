@@ -6,7 +6,7 @@
 
 -- ───────────── 타입 ─────────────
 create type ship_status as enum (
-  '선적 예정', '부킹 대기', '부킹 완료', '선적 완료', '운송 중', '입항 완료', '창고 입고 완료'
+  '선적 예정', '부킹 대기', '부킹 완료', '운송 중', '통관 중', '입고 완료'
 );
 create type ship_mode as enum ('SEA', 'AIR', 'DHL');
 create type shipment_kind as enum ('Product', 'Sample');
@@ -52,7 +52,7 @@ create table shipments (
   updated_by          text not null,
   updated_at          timestamptz not null default now(),
   -- 입고 완료는 입고일 필수, 지연 확정은 사유 필수
-  constraint inbound_needs_date check (status <> '창고 입고 완료' or inbound_date is not null),
+  constraint inbound_needs_date check (status <> '입고 완료' or inbound_date is not null),
   constraint delay_needs_reason check (not delay_confirmed or coalesce(btrim(delay_reason), '') <> '')
 );
 create index shipments_location_etd on shipments (location, etd);
@@ -180,7 +180,7 @@ begin
     ov := o ->> k; nv := n ->> k;
     act := case
       when k = 'location' then case nv when 'archived' then 'archive' when 'trashed' then 'trash' else 'restore' end
-      when k = 'status' and nv = '창고 입고 완료' then 'inbound_complete'
+      when k = 'status' and nv = '입고 완료' then 'inbound_complete'
       when k = 'status' then 'status_change'
       when k = 'delay_confirmed' then case when nv = 'true' then 'delay_confirm' else 'delay_clear' end
       else 'update' end;

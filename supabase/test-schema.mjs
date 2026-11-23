@@ -18,7 +18,7 @@ await db.exec(`
 `);
 await db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 // 마이그레이션은 이미 적용된 DB에 다시 실행해도 안전해야 함
-for (const f of ['002_delay_stage.sql', '003_priority.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
+for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
 await db.query(`select set_access_code('test-code-1234')`);
 
 const as = async (uid, sql, params = []) => {
@@ -64,8 +64,8 @@ await fails(U1, `select set_access_code('hacked-code-1')`, [], /permission denie
 await fails(U1, `select update_shipment($1, '{"created_by":"a"}', '{"created_by":"b"}', 'x')`, [row.id], /수정할 수 없는 필드/);
 
 // 6) 입고 완료는 입고일 필수
-await assert.rejects(() => upd(row.id, { status: '부킹 대기' }, { status: '창고 입고 완료' }), /inbound_needs_date/);
-r = await upd(row.id, { status: '부킹 대기', inbound_date: null }, { status: '창고 입고 완료', inbound_date: '2026-12-01' });
+await assert.rejects(() => upd(row.id, { status: '부킹 대기' }, { status: '입고 완료' }), /inbound_needs_date/);
+r = await upd(row.id, { status: '부킹 대기', inbound_date: null }, { status: '입고 완료', inbound_date: '2026-12-01' });
 assert.equal(r.status, 'ok');
 
 // 7) 지연 확정은 사유 필수, 확정 시각 자동

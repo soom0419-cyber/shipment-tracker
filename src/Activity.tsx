@@ -5,7 +5,7 @@ import type { Activity } from './types';
 
 const ACTION: Record<string, string> = {
   create: '신규 등록', update: '수정', status_change: '상태 변경', delay_confirm: '지연 확정', delay_clear: '지연 해제',
-  inbound_complete: '창고 입고 완료', archive: '보관함으로 이동', trash: '휴지통으로 이동', restore: '복구', purge: '영구 삭제',
+  inbound_complete: '입고 완료', archive: '보관함으로 이동', trash: '휴지통으로 이동', restore: '복구', purge: '영구 삭제',
   exception_type_add: '예외 상태 추가',
 };
 const FIELD: Record<string, string> = {

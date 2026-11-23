@@ -37,8 +37,8 @@ export interface Suggestion { to: Status; why: string }
 
 // 상태 배지 색: 준비(회색) → 부킹 완료(보라) → 이동(파랑) → 입항(청록) → 입고(초록)
 export const STATUS_TONE: Record<string, string> = {
-  '선적 예정': 'gray', '부킹 대기': 'gray', '부킹 완료': 'violet', '선적 완료': 'blue',
-  '운송 중': 'blue', '입항 완료': 'teal', '창고 입고 완료': 'green',
+  '선적 예정': 'gray', '부킹 대기': 'gray', '부킹 완료': 'violet',
+  '운송 중': 'blue', '통관 중': 'teal', '입고 완료': 'green',
 };
 
 interface DisplayProps { col: Col; s: Shipment; ex: ExceptionType[]; dupNo: boolean; row: RowCtx }
@@ -137,9 +137,9 @@ function Editor({ col, s, ex, onAddException, onDone, save, act }: EditorProps) 
     if ('error' in p) return setErr(p.error);
     if (field === 'status' && p.value !== expected) {
       // 입고 완료로 바꾸는 건 입고일 확인 창을 거친다
-      if (p.value === '창고 입고 완료') { done.current = true; onDone(); act('inbound'); return; }
+      if (p.value === '입고 완료') { done.current = true; onDone(); act('inbound'); return; }
       // 완료 해제는 확인 후, 입고일도 함께 비운다
-      if (expected === '창고 입고 완료') {
+      if (expected === '입고 완료') {
         done.current = true; onDone();
         if (confirm(`입고 완료 상태를 '${p.value}'(으)로 바꾸면 입고 완료 목록에서 진행 중 목록으로 돌아갑니다. 바꿀까요?`)) {
           await save(s.id, { status: expected, inbound_date: s.inbound_date }, { status: p.value, inbound_date: null });
@@ -261,7 +261,7 @@ function RowMenu({ s, act, ex, setExc, setPri }: { s: Shipment; act: RowCtx['act
             <hr />
             {item(s.delay_confirmed ? '지연 수정' : '지연 등록', 'delay')}
             {s.delay_confirmed && item('지연 해제', 'clear')}
-            {s.status !== '창고 입고 완료' && item('창고 입고 완료 처리', 'inbound')}
+            {s.status !== '입고 완료' && item('입고 완료 처리', 'inbound')}
             <hr />
             {ex.filter((e) => e.id !== s.exception_id).map((e) => (
               <button key={e.id} className="ghost" onClick={() => { setOpen(false); setExc(e.id); }}>예외 상태: {ko('exception', e.name)}</button>

@@ -54,7 +54,7 @@ export function DelayDialog({ s, stage: initStage, onSave, onClose }: {
   );
 }
 
-// 창고 입고 완료: 실제 입고일 입력 → 확인 → 상태 변경
+// 입고 완료: 실제 입고일 입력 → 확인 → 상태 변경
 export function InboundDialog({ s, onSave, onClose }: {
   s: Shipment; onSave: (date: string) => Promise<boolean>; onClose: () => void;
 }) {
@@ -67,10 +67,10 @@ export function InboundDialog({ s, onSave, onClose }: {
     if (await onSave(date)) onClose(); else setBusy(false);
   };
   return (
-    <Modal title={`${s.shipment_no} 창고 입고 완료`} onClose={onClose}>
+    <Modal title={`${s.shipment_no} 입고 완료`} onClose={onClose}>
       <form onSubmit={submit} className="form">
         <label>실제 창고 입고일<input type="date" required value={date} onChange={(e) => setDate(e.target.value)} /></label>
-        <p className="muted small">전체 물량({s.pcs != null ? `${s.pcs.toLocaleString('en-US')}개` : '수량 미입력'})이 입고되었나요? 확인하면 상태가 '창고 입고 완료'로 바뀌고 입고 완료 목록으로 이동합니다.</p>
+        <p className="muted small">전체 물량({s.pcs != null ? `${s.pcs.toLocaleString('en-US')}개` : '수량 미입력'})이 입고되었나요? 확인하면 상태가 '입고 완료'로 바뀌고 입고 완료 목록으로 이동합니다.</p>
         <div className="row">
           <button className="primary" disabled={busy || !date}>{busy ? '저장 중…' : '입고 완료'}</button>
           <button type="button" onClick={onClose}>취소</button>
