@@ -304,3 +304,10 @@ table.grid { width: var(--tw, max-content); }
 .acts-table td { white-space: normal; overflow-wrap: anywhere; }
 
 .acts-table .no, .acts-table .who { white-space: normal; overflow-wrap: anywhere; }
+
+/* 최근 변경·변경 이력(PC): 칸 폭은 내용만큼, 줄바꿈·잘림 없이 한 줄. 넘치면 가로 스크롤 */
+@media (min-width: 768px) {
+  .acts-table { table-layout: auto; }
+  .acts-table td { white-space: nowrap !important; overflow-wrap: normal !important; width: 1% !important; padding-right: 24px; }
+  .acts-table td.what { width: auto !important; }
+}
