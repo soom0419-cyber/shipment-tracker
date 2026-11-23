@@ -302,3 +302,5 @@ table.grid { width: var(--tw, max-content); }
 
 /* 최근 변경·변경 이력: 겹침 없이 줄바꿈 */
 .acts-table td { white-space: normal; overflow-wrap: anywhere; }
+
+.acts-table .no, .acts-table .who { white-space: normal; overflow-wrap: anywhere; }
