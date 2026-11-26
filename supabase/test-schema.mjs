@@ -18,8 +18,14 @@ await db.exec(`
 `);
 await db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 // 마이그레이션은 이미 적용된 DB에 다시 실행해도 안전해야 함
-for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
+for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql', '006_inbound_schedule.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
 await db.query(`select set_access_code('test-code-1234')`);
+
+const anonRpc = async (tok) => {
+  await db.exec('reset role; set role anon;');
+  try { return (await db.query(`select inbound_schedule($1) r`, [tok])).rows[0].r; } finally { await db.exec('reset role'); }
+};
+await db.query(`insert into read_tokens (token_hash, label) values (encode(sha256('test-token'::bytea), 'hex'), 't')`);
 
 const as = async (uid, sql, params = []) => {
   await db.exec(`reset role; select set_config('request.jwt.claim.sub', '${uid}', false); set role authenticated;`);
@@ -109,4 +115,12 @@ assert.deepEqual([...actions].sort(), [
   'create:', 'trash:location', 'purge:',
 ].sort());
 assert.equal((await log()).find((l) => l.field === 'exception_id').new_value, 'On Hold');
+// 읽기 토큰: 맞는 토큰만 조회 가능, 수정 불가, 휴지통 제외, 민감 칸 미포함
+await assert.rejects(() => anonRpc('wrong'), /invalid token/);
+await assert.rejects(() => anonRpc(null), /invalid token/);
+const sched = await anonRpc('test-token');
+assert.ok(Array.isArray(sched) && sched.length > 0);
+assert.ok(sched.every((x) => x.location !== 'trashed' && !('created_by' in x) && !('remark' in x)));
+await assert.rejects(async () => { await db.exec('reset role; set role anon;'); try { await db.query(`select * from read_tokens`); } finally { await db.exec('reset role'); } }, /permission denied/);
+
 console.log('schema OK —', actions.length, 'activity rows verified');
