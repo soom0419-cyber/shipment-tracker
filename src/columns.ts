@@ -26,6 +26,7 @@ export const COLUMNS: Col[] = [
   { key: 'seasons', label: '시즌', width: 80, kind: 'seasons', field: 'seasons' },
   { key: 'etd', label: '출항 예정일', width: 90, kind: 'date', field: 'etd' },
   { key: 'eta', label: '도착 예정일', width: 90, kind: 'date', field: 'eta' },
+  { key: 'logistics_eta', label: '물류 예상 입고일', width: 90, kind: 'date', field: 'logistics_eta' },
   { key: 'cartons', label: '카톤', width: 58, kind: 'int', field: 'cartons', right: true },
   { key: 'pcs', label: '수량(PCS)', width: 74, kind: 'int', field: 'pcs', right: true },
   { key: 'booking', label: '부킹', width: 54, kind: 'readonly' },

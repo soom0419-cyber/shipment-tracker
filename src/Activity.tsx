@@ -11,7 +11,7 @@ const ACTION: Record<string, string> = {
 const FIELD: Record<string, string> = {
   ...Object.fromEntries(COLUMNS.filter((c) => c.field).map((c) => [c.field!, c.label])),
   exception_id: '예외 상태', delay_confirmed: '지연', delay_reason: '지연 사유', delay_stage: '지연 구분', priority: '중요도',
-  inbound_date: '입고일', location: '위치',
+  inbound_date: '입고일', logistics_eta: '물류 예상 입고일', location: '위치',
 };
 // 알림 대상: 신규 등록, 상태 변경, 지연 확정, 입고 완료
 export const NOTIFY = new Set(['create', 'status_change', 'delay_confirm', 'inbound_complete']);

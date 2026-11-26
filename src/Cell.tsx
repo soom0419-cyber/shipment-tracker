@@ -90,6 +90,7 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
     case 'etd': return s.etd ? <span className={cand?.stage === 'ETD' ? 'warn-text' : ''}>{fmtDate(s.etd)}</span> : <span className="muted">미입력</span>;
     case 'eta': return s.eta ? <span className={cand?.stage === 'ETA' ? 'warn-text' : ''}>{fmtDate(s.eta)}</span>
       : etaMissing(s) ? <span className="warn-text">미입력</span> : null;
+    case 'logistics_eta': return <>{fmtDate(s.logistics_eta)}</>;
     case 'inbound_date': return <>{fmtDate(s.inbound_date)}</>;
     case 'cartons': return <>{fmtInt(s.cartons)}</>;
     case 'pcs': return <>{fmtInt(s.pcs)}</>;

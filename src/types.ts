@@ -31,6 +31,7 @@ export interface Shipment {
   delay_stage: 'ETD' | 'ETA' | null;
   priority?: number;   // 0 없음, 1 중요, 2 긴급
   inbound_date: string | null;
+  logistics_eta: string | null;   // 물류 예상 입고일
   location: Location;
   created_by: string;
   created_at: string;

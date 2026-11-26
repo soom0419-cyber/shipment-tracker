@@ -23,7 +23,7 @@ function value(key: string, s: Shipment, ex: ExceptionType[]): CellV {
     case 'ship_mode': case 'shipment_type': return ko(key, s[key]) || null;
     case 'seasons': return s.seasons.join(', ') || null;
     case 'mail_links': return s.mail_links.join('\n') || null;
-    case 'etd': case 'eta': case 'inbound_date': return toDate(s[key]);
+    case 'etd': case 'eta': case 'logistics_eta': case 'inbound_date': return toDate(s[key]);
     case 'updated': return `${s.updated_by} · ${fmtTime(s.updated_at)}`;
     default: {
       const v = s[key as keyof Shipment];
@@ -50,7 +50,7 @@ export async function downloadXlsx(list: Shipment[], ex: ExceptionType[], withLo
   const ws = XLSX.utils.aoa_to_sheet(rows, { cellDates: true });
   // 표시 형식: 날짜 yyyy.mm.dd, 수량 천 단위 구분
   const D = 'yyyy"."mm"."dd';   // 점을 따옴표로 감싸야 엑셀이 날짜 형식으로 인식
-  const fmt: Record<string, string> = { etd: D, eta: D, inbound_date: D, cartons: '#,##0', pcs: '#,##0' };
+  const fmt: Record<string, string> = { etd: D, eta: D, logistics_eta: D, inbound_date: D, cartons: '#,##0', pcs: '#,##0' };
   EXPORT_COLS.forEach((c, ci) => {
     if (!fmt[c.key]) return;
     for (let ri = 1; ri < rows.length; ri++) {
