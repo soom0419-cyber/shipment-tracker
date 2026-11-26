@@ -141,6 +141,12 @@ begin
   if tg_op = 'INSERT' then
     new.created_at := now();
     new.updated_by := new.created_by;
+    -- 물류 예상 입고일 기본값 = 도착 예정일 + 5일
+    if new.logistics_eta is null and new.eta is not null then new.logistics_eta := new.eta + 5; end if;
+  elsif new.eta is not null and new.eta is distinct from old.eta
+        and new.logistics_eta is not distinct from old.logistics_eta          -- 이번 수정에서 물류 예상 입고일을 직접 바꾸지 않았고
+        and (new.logistics_eta is null or (old.eta is not null and new.logistics_eta = old.eta + 5)) then  -- 비어 있거나 자동값(옛 ETA+5) 그대로일 때만 따라감
+    new.logistics_eta := new.eta + 5;
   end if;
   new.updated_at := now();
   if new.delay_confirmed and (tg_op = 'INSERT' or not old.delay_confirmed) then

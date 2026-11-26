@@ -18,7 +18,7 @@ await db.exec(`
 `);
 await db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 // 마이그레이션은 이미 적용된 DB에 다시 실행해도 안전해야 함
-for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql', '006_inbound_schedule.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
+for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql', '006_inbound_schedule.sql', '007_logistics_auto.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
 await db.query(`select set_access_code('test-code-1234')`);
 
 const anonRpc = async (tok) => {
@@ -122,5 +122,21 @@ const sched = await anonRpc('test-token');
 assert.ok(Array.isArray(sched) && sched.length > 0);
 assert.ok(sched.every((x) => x.location !== 'trashed' && !('created_by' in x) && !('remark' in x)));
 await assert.rejects(async () => { await db.exec('reset role; set role anon;'); try { await db.query(`select * from read_tokens`); } finally { await db.exec('reset role'); } }, /permission denied/);
+
+// 물류 예상 입고일 자동값(ETA+5): 입력 시 채움, ETA 변경 따라감, 직접 고친 값은 유지
+{
+  const q = async (sql, p = []) => (await db.query(sql, p)).rows.map((r) => ({ ...r, logistics_eta: r.logistics_eta instanceof Date ? r.logistics_eta.toISOString().slice(0, 10) : r.logistics_eta }));
+  const [a] = await q(`insert into shipments (shipment_no, eta, created_by, updated_by) values ('AUTO-1', '2026-12-01', 'x', '') returning *`);
+  assert.equal(a.logistics_eta, '2026-12-06');
+  let [u] = await q(`update shipments set eta = '2026-12-10' where id = $1 returning *`, [a.id]);
+  assert.equal(u.logistics_eta, '2026-12-15');
+  [u] = await q(`update shipments set logistics_eta = '2026-12-31' where id = $1 returning *`, [a.id]);
+  [u] = await q(`update shipments set eta = '2026-12-20' where id = $1 returning *`, [a.id]);
+  assert.equal(u.logistics_eta, '2026-12-31', '직접 고친 값은 유지');
+  const [n] = await q(`insert into shipments (shipment_no, created_by, updated_by) values ('AUTO-2', 'x', '') returning *`);
+  assert.equal(n.logistics_eta, null);
+  [u] = await q(`update shipments set eta = '2026-12-01' where id = $1 returning *`, [n.id]);
+  assert.equal(u.logistics_eta, '2026-12-06', '비어 있으면 ETA 입력 시 채움');
+}
 
 console.log('schema OK —', actions.length, 'activity rows verified');

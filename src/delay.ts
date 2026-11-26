@@ -8,13 +8,13 @@ const idx = (s: Status) => STATUSES.indexOf(s);
 
 export interface Candidate { stage: 'ETD' | 'ETA'; next: Status }
 
-// ETD 후보: 선적 전(선적 예정·부킹 대기·부킹 완료)인데 ETD < 오늘
+// ETD 후보: 부킹 완료인데 ETD < 오늘 (선적 예정·부킹 대기는 감지·버튼 없음)
 // ETA 후보: 운송 중인데 ETA < 오늘
 // 예외 상태(On Hold·Cancelled 등)가 있으면 감지하지 않음
 export function candidateOf(s: Shipment, today = todayKST()): Candidate | null {
   if (s.exception_id != null || s.location !== 'active') return null;
   const i = idx(s.status);
-  if (i <= 2 && s.etd && s.etd < today) return { stage: 'ETD', next: '운송 중' };
+  if (i === 2 && s.etd && s.etd < today) return { stage: 'ETD', next: '운송 중' };
   if (i === 3 && s.eta && s.eta < today) return { stage: 'ETA', next: '통관 중' };
   return null;
 }
@@ -37,6 +37,8 @@ if (typeof process !== 'undefined' && process.argv?.[1]?.endsWith('delay.ts')) {
   const t = '2026-11-13';
   const c = (o: Partial<Shipment>) => candidateOf({ ...base, ...o } as Shipment, t);
   console.assert(c({ status: '부킹 완료', etd: '2026-11-12' })?.stage === 'ETD');
+  console.assert(c({ status: '부킹 대기', etd: '2026-11-01' }) === null, '부킹 대기는 후보 아님');
+  console.assert(c({ status: '선적 예정', etd: '2026-11-01' }) === null, '선적 예정은 후보 아님');
   console.assert(c({ status: '부킹 완료', etd: '2026-11-13' }) === null, '오늘은 아직 후보 아님');
   console.assert(c({ status: '운송 중', etd: '2026-11-01' }) === null, '출항 후엔 ETD 무시');
   console.assert(c({ status: '운송 중', eta: '2026-11-10' })?.next === '통관 중');
