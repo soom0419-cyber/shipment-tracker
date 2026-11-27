@@ -308,15 +308,17 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   return (
     <div className="app">
       <header className="top">
-        <span className="brand">✈️ 선적 관리</span>
-        <nav>
+        <div className="toptabs">
+          <button className={view !== 'volume' ? 'on' : ''} onClick={() => { if (view === 'volume') setView('main'); }}>선적관리</button>
+          <button className={view === 'volume' ? 'on' : ''} onClick={() => setView('volume')}>물동량</button>
+        </div>
+        {view !== 'volume' && <nav>
           <a className={view === 'main' ? 'on' : ''} onClick={() => { setView('main'); setF(NO_FILTER); }}>진행 중</a>
           <a className={view === 'completed' ? 'on' : ''} onClick={() => { setView('completed'); setF(NO_FILTER); }}>입고 완료 <span className="muted small">{doneRows.length}</span></a>
           <a className={view === 'archived' ? 'on' : ''} onClick={() => { setView('archived'); setF(NO_FILTER); }}>보관함 <span className="muted small">{archRows.length}</span></a>
           <a className={view === 'trashed' ? 'on' : ''} onClick={() => { setView('trashed'); setF(NO_FILTER); }}>휴지통 <span className="muted small">{trashRows.length}</span></a>
-          <a className={view === 'volume' ? 'on' : ''} onClick={() => setView('volume')}>물동량</a>
           <a className={view === 'activity' ? 'on' : ''} onClick={() => setView('activity')}>변경 이력</a>
-        </nav>
+        </nav>}
         <span className="grow" />
         <SaveBadge s={saveState} />
         <Bell items={acts} me={name} onOpen={openShipment} />
