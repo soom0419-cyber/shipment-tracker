@@ -306,7 +306,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
     : conflict ? ko(conflict.field, String(v)) : String(v));
 
   return (
-    <div className="app">
+    <div className={`app ${view === 'volume' ? 'vol' : ''}`}>
       <header className="top">
         <div className="toptabs">
           <button className={view !== 'volume' ? 'on' : ''} onClick={() => { if (view === 'volume') setView('main'); }}>선적관리</button>

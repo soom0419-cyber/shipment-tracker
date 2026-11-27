@@ -56,7 +56,7 @@ export function Volume() {
   const any = (q: Q) => MATS.some((m) => q[m]);
 
   return (
-    <section className="volume">
+    <section className="volume" style={{ '--wk': weeks.length } as React.CSSProperties}>
       <div className="vol-head">
         <div className="vol-nav">
           <button className="mini" onClick={() => shift(-1)}>◀</button>

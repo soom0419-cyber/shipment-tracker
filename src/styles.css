@@ -378,3 +378,25 @@ table.grid { width: var(--tw, max-content); }
   .vl { font-size: clamp(11px, 1.05vw, 17px); line-height: 1.6; white-space: nowrap; }
   .vl span { overflow: hidden; text-overflow: clip; }
 }
+
+/* ── 물동량: PC·태블릿은 화면 높이에 맞춰 세로 스크롤 없이 한 화면에 (칸 높이·글자 크기가 주 수에 따라 자동 조절) ── */
+@media (min-width: 761px) {
+  .app.vol { height: 100dvh; padding: 12px 20px 10px; display: flex; flex-direction: column; overflow: hidden; }
+  .app.vol .top { margin-bottom: 8px; flex: none; }
+  .app.vol .volume { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0; }
+  .app.vol .volume > * { flex: none; }
+  .app.vol .vol-head { margin-bottom: 6px; }
+  .app.vol .vol-nav { font-size: 20px; }
+  .app.vol .vol-rates { padding: 6px 14px; margin-bottom: 6px; }
+  .app.vol .rate b { font-size: 22px; }
+  .app.vol .vol-legend { margin-bottom: 6px; }
+  .app.vol .vol-note { margin: 6px 0 0; font-size: 11px; line-height: 1.35; }
+  .app.vol .cal { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .app.vol .cal-row { flex: 1 1 0; min-height: 0; }
+  .app.vol .cal-dow { flex: none; }
+  .app.vol .cal-row > div { min-height: 0; overflow: hidden; padding: 4px 8px; }
+  .app.vol .cal-dow > div { padding: 5px; font-size: 13px; }
+  .app.vol .dnum { font-size: clamp(9px, min(calc((100dvh - 290px) / var(--wk, 5) / 8.6), 1vw), 15px); margin-bottom: 2px; }
+  .app.vol .vl { font-size: clamp(9px, min(calc((100dvh - 290px) / var(--wk, 5) / 8.2), 1.05vw), 17px); line-height: 1.32; }
+  .app.vol .vl.est { margin-top: 1px; }
+}
