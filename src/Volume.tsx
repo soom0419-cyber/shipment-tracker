@@ -11,6 +11,7 @@ const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8))}`;
 const dow = (d: string) => DOW[(new Date(`${d}T00:00:00`).getDay() + 6) % 7];
 type Q = Record<string, number>;
+const lab = (c: number | string) => (typeof c === 'number' ? `${c}차` : c);   // 'AW26 15차' / 'SS27 2차' (옛 집계의 숫자만 있으면 'N차')
 
 // 해당 월을 덮는 주(월~일) 목록
 function weeksOf(ym: string): string[][] {
@@ -104,7 +105,7 @@ export function Volume() {
                 const cs = chaOf(d);
                 return (
                   <div key={d} className={`cal-day ${d.slice(0, 7) !== ym ? 'out' : ''} ${d === today ? 'today' : ''} ${d < today ? 'past' : ''}`}>
-                    <div className="dnum">{Number(d.slice(8))}{cs.length > 0 && <small>{cs.map((c) => `${c}차`).join('·')}</small>}</div>
+                    <div className="dnum">{Number(d.slice(8))}{cs.length > 0 && <small>{cs.map(lab).join(' · ')}</small>}</div>
                     <Lines q={cell(d)} />
                     <Lines q={estOf(d)} est />
                   </div>
@@ -130,7 +131,7 @@ export function Volume() {
               <div className="wk-head"><b>{md(w[0])} ~ {md(w[6])}</b><span className="muted small">확정 {n(tot(t))}장{tot(e) > 0 && ` · 예상 ${n(tot(e))}장`}</span></div>
               {ds.length === 0 ? <div className="muted small">입고 예정 없음</div> : ds.map((d) => (
                 <div key={d} className={`wk-day ${d < today ? 'past' : ''}`}>
-                  <div className="dnum">{md(d)} ({dow(d)}){chaOf(d).length > 0 && <small>{chaOf(d).map((c) => `${c}차`).join('·')}</small>}</div>
+                  <div className="dnum">{md(d)} ({dow(d)}){chaOf(d).length > 0 && <small>{chaOf(d).map(lab).join(' · ')}</small>}</div>
                   <Lines q={cell(d)} />
                   <Lines q={estOf(d)} est />
                 </div>

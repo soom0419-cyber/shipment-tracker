@@ -74,7 +74,7 @@ export function subscribe(onChange: (table: string) => void): () => void {
 export interface VolumeDoc {
   generated: string; today: string;
   days: Record<string, Record<string, Record<string, number>>>;   // 날짜 → 시즌 → 물성 → 수량
-  cha: Record<string, Record<string, number[]>>;                   // 날짜 → 시즌 → 차수
+  cha: Record<string, Record<string, (number | string)[]>>;                   // 날짜 → 시즌 → 차수
   est?: Record<string, Record<string, Record<string, number>>>;    // 예상 입고(선적 확정 전): 날짜 → 시즌 → 물성 → 수량
   overdue?: Record<string, Record<string, number>>;                // 예상일이 지난 수량: 시즌 → 물성 → 수량
   rates: Record<string, Record<string, { order: number; in: number; rate: number | null }>>;
