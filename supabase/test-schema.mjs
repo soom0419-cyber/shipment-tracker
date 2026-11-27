@@ -18,7 +18,7 @@ await db.exec(`
 `);
 await db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 // 마이그레이션은 이미 적용된 DB에 다시 실행해도 안전해야 함
-for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql', '006_inbound_schedule.sql', '007_logistics_auto.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
+for (const f of ['002_delay_stage.sql', '003_priority.sql', '004_status_steps.sql', '005_logistics_eta.sql', '006_inbound_schedule.sql', '007_logistics_auto.sql', '008_volume_schedule.sql']) await db.exec(readFileSync(new URL(`./migrations/${f}`, import.meta.url), 'utf8'));
 await db.query(`select set_access_code('test-code-1234')`);
 
 const anonRpc = async (tok) => {
@@ -138,5 +138,19 @@ await assert.rejects(async () => { await db.exec('reset role; set role anon;'); 
   [u] = await q(`update shipments set eta = '2026-12-01' where id = $1 returning *`, [n.id]);
   assert.equal(u.logistics_eta, '2026-12-06', '비어 있으면 ETA 입력 시 채움');
 }
+
+// 물동량: 쓰기 토큰만 올릴 수 있고, 읽기 토큰은 못 올림, 팀원만 읽음
+await db.query(`insert into read_tokens (token_hash, label, can_write) values (encode(sha256('write-token'::bytea), 'hex'), 'w', true)`);
+const putVol = async (tok, doc) => { await db.exec('reset role; set role anon;'); try { await db.query(`select put_volume_schedule($1, $2)`, [tok, doc]); } finally { await db.exec('reset role'); } };
+await assert.rejects(() => putVol('test-token', '{"a":1}'), /invalid token/);
+await assert.rejects(() => putVol('nope', '{"a":1}'), /invalid token/);
+await putVol('write-token', '{"a":1}');
+await putVol('write-token', '{"a":2}');
+assert.equal((await db.query(`select doc from volume_schedule`)).rows[0].doc.a, 2);
+await db.query(`select set_access_code('vol-code-1234')`);
+assert.equal((await as(U2, `select * from volume_schedule`)).length, 0, '비팀원은 못 읽음');
+assert.equal((await as(U2, `select join_team('vol-code-1234') ok`))[0].ok, true);
+assert.equal((await as(U2, `select * from volume_schedule`)).length, 1, '팀원은 읽음');
+await fails(U2, `update volume_schedule set doc = '{}'`, [], /permission denied/);
 
 console.log('schema OK —', actions.length, 'activity rows verified');

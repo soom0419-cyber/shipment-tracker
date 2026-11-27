@@ -69,3 +69,15 @@ export function subscribe(onChange: (table: string) => void): () => void {
   ch.subscribe();
   return () => { void sb.removeChannel(ch); };
 }
+
+// ── 물동량(주간 입고 캘린더): 대시보드 빌드가 올린 집계 문서 ──
+export interface VolumeDoc {
+  generated: string; today: string;
+  days: Record<string, Record<string, Record<string, number>>>;   // 날짜 → 시즌 → 물성 → 수량
+  cha: Record<string, Record<string, number[]>>;                   // 날짜 → 시즌 → 차수
+  rates: Record<string, Record<string, { order: number; in: number; rate: number | null }>>;
+}
+export async function getVolume(): Promise<VolumeDoc | null> {
+  const r = must(await sb.from('volume_schedule').select('doc').eq('id', 1).maybeSingle()) as { doc: VolumeDoc } | null;
+  return r?.doc ?? null;
+}

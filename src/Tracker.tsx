@@ -8,6 +8,7 @@ import { downloadXlsx } from './excel';
 import { ko } from './ko';
 import { COLUMNS, LAST_STICKY, colVars, colWidth, exceptionName, stickyLeft } from './columns';
 import { NewRow, loadDraft } from './NewRow';
+import { Volume } from './Volume';
 import type { Activity, ExceptionType, Shipment, ShipmentInput } from './types';
 import { SHIP_MODES, STATUSES } from './types';
 
@@ -18,7 +19,7 @@ interface Filters {
   etdFrom: string; etdTo: string; etaFrom: string; etaTo: string; delay: string; exc: string;
 }
 const NO_FILTER: Filters = { q: '', season: '', country: '', mode: '', status: '', type: '', etdFrom: '', etdTo: '', etaFrom: '', etaTo: '', delay: '', exc: '' };
-type View = 'main' | 'completed' | 'archived' | 'trashed' | 'activity';
+type View = 'main' | 'completed' | 'archived' | 'trashed' | 'activity' | 'volume';
 const DONE = '입고 완료';
 
 // 상태 변경 제안: 데이터를 보고 다음 단계를 제안만 한다 (자동 변경 없음)
@@ -252,7 +253,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
   const doneRows = useMemo(() => rows.filter((s) => s.location === 'active' && s.status === DONE), [rows]);
   const archRows = useMemo(() => rows.filter((s) => s.location === 'archived'), [rows]);
   const trashRows = useMemo(() => rows.filter((s) => s.location === 'trashed'), [rows]);
-  const active = { main: mainRows, completed: doneRows, archived: archRows, trashed: trashRows, activity: [] }[view];
+  const active = { main: mainRows, completed: doneRows, archived: archRows, trashed: trashRows, activity: [], volume: [] }[view];
   const readOnly = view === 'archived' || view === 'trashed';   // 보관·삭제된 건은 복구 후 수정
   const isCancelled = useCallback((s: Shipment) => exceptionName(s, ex) === 'Cancelled', [ex]);
 
@@ -313,12 +314,13 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
           <a className={view === 'completed' ? 'on' : ''} onClick={() => { setView('completed'); setF(NO_FILTER); }}>입고 완료 <span className="muted small">{doneRows.length}</span></a>
           <a className={view === 'archived' ? 'on' : ''} onClick={() => { setView('archived'); setF(NO_FILTER); }}>보관함 <span className="muted small">{archRows.length}</span></a>
           <a className={view === 'trashed' ? 'on' : ''} onClick={() => { setView('trashed'); setF(NO_FILTER); }}>휴지통 <span className="muted small">{trashRows.length}</span></a>
+          <a className={view === 'volume' ? 'on' : ''} onClick={() => setView('volume')}>물동량</a>
           <a className={view === 'activity' ? 'on' : ''} onClick={() => setView('activity')}>변경 이력</a>
         </nav>
         <span className="grow" />
         <SaveBadge s={saveState} />
         <Bell items={acts} me={name} onOpen={openShipment} />
-        {view !== 'activity' && (
+        {view !== 'activity' && view !== 'volume' && (
           <ExportMenu
             current={shown.length} all={rows.filter((s) => s.location !== 'trashed').length}
             onCurrent={() => downloadXlsx(shown, ex, false)}
@@ -347,7 +349,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
         </div>
       )}
 
-      {view === 'activity' ? (
+      {view === 'volume' ? <Volume /> : view === 'activity' ? (
         <section className="activity-page">
           <ActivityList items={acts} onOpen={openShipment} />
           {moreActs && acts.length >= 200 && <button onClick={() => void loadMoreActs()}>더 보기</button>}
@@ -416,7 +418,7 @@ export function Tracker({ name, onRename }: { name: string; onRename: () => void
               );
             })}
             {!shown.length && !newOpen && (
-              <tr><td colSpan={COLUMNS.length} className="empty">{filtered ? '조건에 맞는 선적이 없습니다.' : ({ main: '진행 중인 선적이 없습니다. + 신규로 등록하세요.', completed: '창고 입고가 완료된 선적이 없습니다.', archived: '보관함이 비어 있습니다.', trashed: '휴지통이 비어 있습니다.', activity: '' })[view]}</td></tr>
+              <tr><td colSpan={COLUMNS.length} className="empty">{filtered ? '조건에 맞는 선적이 없습니다.' : ({ main: '진행 중인 선적이 없습니다. + 신규로 등록하세요.', completed: '창고 입고가 완료된 선적이 없습니다.', archived: '보관함이 비어 있습니다.', trashed: '휴지통이 비어 있습니다.', activity: '', volume: '' })[view]}</td></tr>
             )}
           </tbody>
         </table>
