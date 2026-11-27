@@ -1,5 +1,5 @@
 // Excel(.xlsx) 내보내기. 화면 컬럼 순서·표시 형식을 따르고, 이력은 넣지 않는다.
-import { COLUMNS, bookingOf, exceptionName } from './columns';
+import { COLUMNS, exceptionName } from './columns';
 import { fmtTime } from './Activity';
 import { ko } from './ko';
 import type { ExceptionType, Shipment } from './types';
@@ -18,7 +18,6 @@ function value(key: string, s: Shipment, ex: ExceptionType[]): CellV {
       const parts = [s.delay_confirmed ? `지연${s.delay_reason ? ` (${s.delay_reason})` : ''}` : '', ko('exception', exceptionName(s, ex))];
       return parts.filter(Boolean).join(' / ') || null;
     }
-    case 'booking': return bookingOf(s);
     case 'status': { const x = value('exception', s, ex); return x ? `${s.status} / ${x}` : s.status; }
     case 'ship_mode': case 'shipment_type': return ko(key, s[key]) || null;
     case 'seasons': return s.seasons.join(', ') || null;

@@ -29,7 +29,6 @@ export const COLUMNS: Col[] = [
   { key: 'logistics_eta', label: '물류 예상 입고일', width: 90, kind: 'date', field: 'logistics_eta' },
   { key: 'cartons', label: '카톤', width: 58, kind: 'int', field: 'cartons', right: true },
   { key: 'pcs', label: '수량(PCS)', width: 74, kind: 'int', field: 'pcs', right: true },
-  { key: 'booking', label: '부킹', width: 54, kind: 'readonly' },
   { key: 'mail_links', label: '메일 체인', width: 94, kind: 'mail', field: 'mail_links' },
   { key: 'remark', label: '비고', width: 140, kind: 'textarea', field: 'remark' },
   { key: 'updated', label: '최종 수정', width: 100, kind: 'readonly' },
@@ -63,7 +62,6 @@ export function colVars(areaWidth: number): Record<string, string> {
 // ── 표시 형식 ──
 export const fmtDate = (d: string | null) => (d ? d.replaceAll('-', '.') : '');
 export const fmtInt = (n: number | null) => (n == null ? '' : n.toLocaleString('en-US'));
-export const bookingOf = (s: Shipment) => (STATUSES.indexOf(s.status) >= 2 ? '완료' : '대기');
 
 export function fmtAgo(iso: string, now = Date.now()) {
   const m = Math.round((now - new Date(iso).getTime()) / 60000);

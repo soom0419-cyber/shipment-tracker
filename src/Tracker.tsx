@@ -6,7 +6,7 @@ import { candidateOf, clearSuggested, stageOfStatus, todayKST } from './delay';
 import { DelayDialog, InboundDialog, PurgeDialog } from './Dialogs';
 import { downloadXlsx } from './excel';
 import { ko } from './ko';
-import { COLUMNS, LAST_STICKY, bookingOf, colVars, colWidth, exceptionName, stickyLeft } from './columns';
+import { COLUMNS, LAST_STICKY, colVars, colWidth, exceptionName, stickyLeft } from './columns';
 import { NewRow, loadDraft } from './NewRow';
 import type { Activity, ExceptionType, Shipment, ShipmentInput } from './types';
 import { SHIP_MODES, STATUSES } from './types';
@@ -31,7 +31,6 @@ const readDismissed = (): string[] => { try { return JSON.parse(localStorage.get
 const sortValue = (s: Shipment, key: string, ex: ExceptionType[]): string | number | null => {
   switch (key) {
     case 'status': return STATUSES.indexOf(s.status);
-    case 'booking': return bookingOf(s);
     case 'exception': return s.delay_confirmed ? '0' : exceptionName(s, ex);
     case 'seasons': return s.seasons.join(',') || null;
     case 'mail_links': return s.mail_links.length || null;

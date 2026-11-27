@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Col } from './columns';
-import { LAST_STICKY, stickyLeft, bookingOf, exceptionName, fmtAgo, fmtDate, fmtInt, isUrl, parseInput, toInput } from './columns';
+import { LAST_STICKY, stickyLeft, exceptionName, fmtAgo, fmtDate, fmtInt, isUrl, parseInput, toInput } from './columns';
 import type { Candidate } from './delay';
 import { etaMissing } from './delay';
 import { ko } from './ko';
@@ -86,7 +86,6 @@ export function Display({ col, s, ex, dupNo, row }: DisplayProps) {
         </>
       );
     }
-    case 'booking': return <span className="muted">{bookingOf(s)}</span>;
     case 'etd': return s.etd ? <span className={cand?.stage === 'ETD' ? 'warn-text' : ''}>{fmtDate(s.etd)}</span> : <span className="muted">미입력</span>;
     case 'eta': return s.eta ? <span className={cand?.stage === 'ETA' ? 'warn-text' : ''}>{fmtDate(s.eta)}</span>
       : etaMissing(s) ? <span className="warn-text">미입력</span> : null;
